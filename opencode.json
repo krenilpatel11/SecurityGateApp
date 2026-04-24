@@ -1,0 +1,165 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "github-copilot/claude-sonnet-4-6",
+  "small_model": "anthropic/claude-haiku-4-5",
+  "default_agent": "planner",
+  "autoupdate": true,
+  "share": "manual",
+  "instructions": ["AGENTS.md"],
+  "compaction": {
+    "auto": true,
+    "prune": true,
+    "reserved": 12000
+  },
+  "watcher": {
+    "ignore": [
+      "node_modules/**",
+      "dist/**",
+      ".git/**",
+      "*.pem",
+      ".env",
+      "package-lock.json"
+    ]
+  },
+  "permission": {
+    "bash": {
+      "*": "ask",
+      "npm run dev": "allow",
+      "npm run build": "allow",
+      "npm install": "allow",
+      "npm run lint": "allow",
+      "git status": "allow",
+      "git log*": "allow",
+      "git diff*": "allow",
+      "ls *": "allow",
+      "cat *": "allow"
+    },
+    "webfetch": "allow"
+  },
+  "agent": {
+    "planner": {
+      "description": "Agile project planner — creates sprint plans, prioritizes features, generates innovative ideas, and produces versioned roadmaps for both UI and API modules. Use this agent first to orchestrate the build workflow.",
+      "mode": "primary",
+      "model": "anthropic/claude-haiku-4-5",
+      "temperature": 0.4,
+      "color": "#6366f1",
+      "prompt": "{file:.opencode/prompts/planner.md}",
+      "permission": {
+        "edit": "ask",
+        "bash": {
+          "*": "ask",
+          "git status": "allow",
+          "git log*": "allow",
+          "git diff*": "allow",
+          "ls *": "allow"
+        },
+        "task": {
+          "*": "deny",
+          "ui-builder": "allow",
+          "api-builder": "allow",
+          "qa-reviewer": "allow"
+        }
+      }
+    },
+    "ui-builder": {
+      "description": "UI module developer — builds the React/Vite/Tailwind/Radix UI frontend for SecurityGateCommunityManegmentUI. Works in parallel with api-builder. Uses claude-sonnet-4-6 for full development capability.",
+      "mode": "subagent",
+      "model": "github-copilot/claude-sonnet-4-6",
+      "temperature": 0.2,
+      "color": "#06b6d4",
+      "prompt": "{file:.opencode/prompts/ui-builder.md}",
+      "permission": {
+        "edit": "allow",
+        "bash": {
+          "*": "ask",
+          "npm run dev": "allow",
+          "npm run build": "allow",
+          "npm install *": "allow",
+          "npm run lint": "allow",
+          "ls *": "allow",
+          "git status": "allow",
+          "git diff*": "allow"
+        },
+        "webfetch": "allow"
+      }
+    },
+    "api-builder": {
+      "description": "API module developer — builds the Node.js/TypeScript/Express/MongoDB backend for SecurityGateCommunityHub-js-API. Works in parallel with ui-builder. Uses claude-sonnet-4-6 for full development capability.",
+      "mode": "subagent",
+      "model": "github-copilot/claude-sonnet-4-6",
+      "temperature": 0.2,
+      "color": "#10b981",
+      "prompt": "{file:.opencode/prompts/api-builder.md}",
+      "permission": {
+        "edit": "allow",
+        "bash": {
+          "*": "ask",
+          "npm run dev": "allow",
+          "npm run build": "allow",
+          "npm install *": "allow",
+          "npm run lint": "allow",
+          "ls *": "allow",
+          "git status": "allow",
+          "git diff*": "allow"
+        },
+        "webfetch": "allow"
+      }
+    },
+    "qa-reviewer": {
+      "description": "QA and deployment agent — runs builds, checks functionality, reports test results, validates API/UI integration, and provides a hosted website link via free hosting (Vercel for UI, Render for API, MongoDB Atlas for DB). Uses a lightweight model for efficient review.",
+      "mode": "subagent",
+      "model": "anthropic/claude-haiku-4-5",
+      "temperature": 0.1,
+      "color": "#f59e0b",
+      "prompt": "{file:.opencode/prompts/qa-reviewer.md}",
+      "permission": {
+        "edit": "deny",
+        "bash": {
+          "*": "ask",
+          "npm run build": "allow",
+          "npm run lint": "allow",
+          "npm test": "allow",
+          "ls *": "allow",
+          "git status": "allow",
+          "git log*": "allow",
+          "git diff*": "allow",
+          "npx vercel --prod": "ask",
+          "curl *": "allow"
+        },
+        "webfetch": "allow"
+      }
+    }
+  },
+  "command": {
+    "plan-sprint": {
+      "description": "Generate an agile sprint plan with new feature ideas for the current iteration",
+      "template": "Act as the planner agent. Analyze the current state of the SecurityGateApp codebase (both UI in SecurityGateCommunityManegmentUI/gate-community-hub and API in SecurityGateCommunityHub-js-API). Generate a detailed Agile sprint plan for: $ARGUMENTS. Include: 1) innovative feature ideas aligned with a security gate community management system, 2) sprint backlog with user stories, 3) acceptance criteria, 4) version tag (e.g. v1.x.0), 5) recommended free tech stack changes if any. Log all planning decisions to CHANGELOG.md.",
+      "agent": "planner",
+      "model": "anthropic/claude-haiku-4-5"
+    },
+    "build-ui": {
+      "description": "Invoke ui-builder agent to implement UI tasks from the current sprint",
+      "template": "You are the ui-builder agent. Implement the following UI task in SecurityGateCommunityManegmentUI/gate-community-hub: $ARGUMENTS. Follow the project coding standards (React 19, TypeScript, Tailwind CSS v4, Radix UI, React Query, React Router v7). Log every file created or modified to CHANGELOG.md with timestamp.",
+      "agent": "ui-builder",
+      "model": "github-copilot/claude-sonnet-4-6"
+    },
+    "build-api": {
+      "description": "Invoke api-builder agent to implement API tasks from the current sprint",
+      "template": "You are the api-builder agent. Implement the following API task in SecurityGateCommunityHub-js-API: $ARGUMENTS. Follow the project coding standards (Node.js, TypeScript, Express 5, Mongoose, JWT, Passport). Log every file created or modified to CHANGELOG.md with timestamp.",
+      "agent": "api-builder",
+      "model": "github-copilot/claude-sonnet-4-6"
+    },
+    "qa-review": {
+      "description": "Run builds, lint, and produce a QA review with deployment instructions",
+      "template": "You are the qa-reviewer agent. Run builds and lint for both modules ($ARGUMENTS). Validate: 1) TypeScript compiles without errors, 2) Vite build succeeds, 3) API server starts, 4) All route endpoints respond correctly. Then produce: a deployment checklist for Vercel (UI) + Render (API) + MongoDB Atlas (DB), estimated free-tier costs ($0), and the expected hosted website URL. Append the review summary to QA_REPORT.md with date and version.",
+      "agent": "qa-reviewer",
+      "model": "anthropic/claude-haiku-4-5"
+    },
+    "new-version": {
+      "description": "Bump the project version and generate release notes for both modules",
+      "template": "Create a new version release for SecurityGateApp: $ARGUMENTS. Update package.json version in both modules, generate CHANGELOG.md entry with all changes since last version, create git tag instructions, and produce a release summary with new features, bug fixes, and breaking changes.",
+      "agent": "planner",
+      "model": "anthropic/claude-haiku-4-5"
+    }
+  }
+}

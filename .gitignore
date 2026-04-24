@@ -1,0 +1,36 @@
+# Environment files — NEVER commit secrets
+.env
+.env.local
+.env.production
+.env.*.local
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+build/
+**/dist/
+**/build/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# SSL certs (local dev only)
+*.pem
+
+# IDE
+.vscode/
+.idea/
+
+# Vercel
+.vercel/
