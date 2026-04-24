@@ -1,8 +1,8 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "https://localhost:5001/api", // Use env for flexibility
-  withCredentials: true, // If using cookies/session, else false for JWT in header
+  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:5001/api",
+  withCredentials: true,
 });
 
 // Add JWT token to every request if present
@@ -13,5 +13,18 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+// On 401, clear token and redirect to login
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("refreshToken");
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default api;
