@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: securitygate-api
+    name: securitygateapp
     runtime: node
     region: oregon
     plan: free
@@ -25,6 +25,6 @@ services:
       - key: GOOGLE_CLIENT_SECRET
         sync: false
       - key: GOOGLE_CALLBACK_URL
-        sync: false
+        value: https://securitygateapp.onrender.com/api/auth/google/callback
       - key: FRONTEND_URL
-        sync: false
+        value: https://gate-community-hub.vercel.app
