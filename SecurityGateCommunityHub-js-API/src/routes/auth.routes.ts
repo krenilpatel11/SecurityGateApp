@@ -12,16 +12,27 @@ router.get('/google', passport.authenticate('google', { scope: ['profile', 'emai
 // Google OAuth callback
 router.get(
   '/google/callback',
-  passport.authenticate('google', { session: false, failureRedirect: '/login' }),
-  (req: Request, res: Response) => {
-    const user = req.user as IUser | undefined;
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    const token = generateToken(user);
-    const refreshToken = generateRefreshToken(user);
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-    res.redirect(`${frontendUrl}/oauth-success?token=${token}&refreshToken=${refreshToken}`);
+  (req: Request, res: Response, next: Parameters<typeof passport.authenticate>[2]) => {
+    passport.authenticate('google', { session: false }, (err: Error | null, user: IUser | false) => {
+      if (err) {
+        console.error('Google OAuth error:', err.message);
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+        return res.redirect(`${frontendUrl}/login?error=oauth_failed`);
+      }
+      if (!user) {
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+        return res.redirect(`${frontendUrl}/login?error=no_user`);
+      }
+      try {
+        const token = generateToken(user);
+        const refreshToken = generateRefreshToken(user);
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+        return res.redirect(`${frontendUrl}/oauth-success?token=${token}&refreshToken=${refreshToken}`);
+      } catch (tokenErr) {
+        console.error('Token generation error:', tokenErr);
+        return res.status(500).json({ error: 'Token generation failed' });
+      }
+    })(req, res, next);
   }
 );
 

@@ -11,9 +11,24 @@ import announcementRoutes from './routes/announcement.routes';
 
 const app = express();
 
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+
+// Trust Render's reverse proxy so secure cookies work
+if (IS_PRODUCTION) {
+  app.set('trust proxy', 1);
+}
+
 app.use(
   cors({
-    origin: ['http://localhost:5173', 'https://localhost:5173', 'http://localhost:5001', 'https://localhost:5001'],
+    origin: [
+      'http://localhost:5173',
+      'https://localhost:5173',
+      'http://localhost:5001',
+      'https://localhost:5001',
+      'https://gate-community-hub.vercel.app',
+      FRONTEND_URL,
+    ],
     credentials: true,
   })
 );
@@ -25,8 +40,10 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === 'production', // Only secure in production
-      sameSite: 'none',
+      secure: IS_PRODUCTION,
+      sameSite: IS_PRODUCTION ? 'none' : 'lax',
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
     },
   })
 );
