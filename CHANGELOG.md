@@ -12,9 +12,21 @@ Format: `## [vX.Y.Z] — YYYY-MM-DD`
 - Agile sprint pipeline: planner → ui-builder + api-builder (parallel) → qa-reviewer
 - Free hosting stack defined: MongoDB Atlas + Render.com + Vercel
 
----
+## [v0.2.0] — 2026-04-26 — Sprint 2: Community Modules (IN PROGRESS)
 
-## [v0.1.0] — 2026-04-24 — Sprint 1: MVP Core
+### Planned
+- Profile page + API
+- Admin Panel — user & role management
+- Staff management
+- Complaints system (raise + resolve)
+- SOS Emergency alerts
+- Payments tracking
+- Amenity booking system
+- Events + RSVP
+- Polls + voting
+- Notifications feed
+
+--- — Sprint 1: MVP Core
 
 ### Added — API
 - ✅ Fixed CORS config to include `http://localhost:5173`

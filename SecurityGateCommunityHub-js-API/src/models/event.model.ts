@@ -6,6 +6,8 @@ export interface IEvent extends Document {
   date: Date;
   rsvpRequired: boolean;
   description?: string;
+  rsvps: mongoose.Types.ObjectId[];
+  createdBy: mongoose.Types.ObjectId;
 }
 
 const EventSchema = new Schema<IEvent>(
@@ -14,7 +16,9 @@ const EventSchema = new Schema<IEvent>(
     location: { type: String, required: true },
     date: { type: Date, required: true },
     rsvpRequired: { type: Boolean, default: false },
-    description: { type: String }
+    description: { type: String },
+    rsvps: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   },
   { timestamps: true }
 );

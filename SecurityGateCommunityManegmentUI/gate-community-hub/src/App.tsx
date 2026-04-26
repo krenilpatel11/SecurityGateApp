@@ -10,6 +10,15 @@ import { QueryProvider } from "./context/QueryProvider";
 import VisitorDashboard from "./page/Visitor/VisitorDashboard";
 import DeliveryPage from "./page/Delivery/DeliveryPage";
 import AnnouncementsPage from "./page/Announcements/AnnouncementsPage";
+import ProfilePage from "./page/Profile/ProfilePage";
+import AdminPage from "./page/Admin/AdminPage";
+import StaffPage from "./page/Staff/StaffPage";
+import ComplaintsPage from "./page/Complaints/ComplaintsPage";
+import SOSPage from "./page/SOS/SOSPage";
+import PaymentsPage from "./page/Payments/PaymentsPage";
+import AmenityPage from "./page/Amenity/AmenityPage";
+import CommunityPage from "./page/Community/CommunityPage";
+import NotificationsPage from "./page/Notifications/NotificationsPage";
 
 export default function App() {
   return (
@@ -20,40 +29,22 @@ export default function App() {
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/oauth-success" element={<OAuthSuccess />} />
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/visitor"
-                element={
-                  <ProtectedRoute>
-                    <VisitorDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/delivery"
-                element={
-                  <ProtectedRoute>
-                    <DeliveryPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/announcements"
-                element={
-                  <ProtectedRoute>
-                    <AnnouncementsPage />
-                  </ProtectedRoute>
-                }
-              />
               <Route path="/logout" element={<Logout />} />
               <Route path="/" element={<Login />} />
+
+              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/visitor" element={<ProtectedRoute><VisitorDashboard /></ProtectedRoute>} />
+              <Route path="/delivery" element={<ProtectedRoute><DeliveryPage /></ProtectedRoute>} />
+              <Route path="/announcements" element={<ProtectedRoute><AnnouncementsPage /></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+              <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
+              <Route path="/staff" element={<ProtectedRoute><StaffPage /></ProtectedRoute>} />
+              <Route path="/complaints" element={<ProtectedRoute><ComplaintsPage /></ProtectedRoute>} />
+              <Route path="/sos" element={<ProtectedRoute><SOSPage /></ProtectedRoute>} />
+              <Route path="/payments" element={<ProtectedRoute><PaymentsPage /></ProtectedRoute>} />
+              <Route path="/amenities" element={<ProtectedRoute><AmenityPage /></ProtectedRoute>} />
+              <Route path="/community" element={<ProtectedRoute><CommunityPage /></ProtectedRoute>} />
+              <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
             </Routes>
           </Layout>
         </ThemeProvider>

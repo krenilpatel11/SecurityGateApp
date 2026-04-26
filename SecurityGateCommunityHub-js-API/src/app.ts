@@ -8,6 +8,14 @@ import residentRoutes from './routes/resident.routes';
 import visitorRoutes from './routes/visitor.routes';
 import deliveryRoutes from './routes/delivery.routes';
 import announcementRoutes from './routes/announcement.routes';
+import adminRoutes from './routes/admin.routes';
+import complaintRoutes from './routes/complaint.routes';
+import sosRoutes from './routes/sos.routes';
+import paymentRoutes from './routes/payment.routes';
+import amenityRoutes from './routes/amenity.routes';
+import eventRoutes from './routes/event.routes';
+import pollRoutes from './routes/poll.routes';
+import notificationRoutes from './routes/notification.routes';
 
 const app = express();
 
@@ -56,6 +64,14 @@ app.use('/api/resident', residentRoutes);
 app.use('/api/visitor', visitorRoutes);
 app.use('/api/delivery', deliveryRoutes);
 app.use('/api/announcements', announcementRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/complaints', complaintRoutes);
+app.use('/api/sos', sosRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/amenities', amenityRoutes);
+app.use('/api/events', eventRoutes);
+app.use('/api/polls', pollRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Health check
 app.get('/health', (_req: Request, res: Response) => {

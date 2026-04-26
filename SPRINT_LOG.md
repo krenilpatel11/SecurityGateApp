@@ -84,11 +84,70 @@ Ready to begin Sprint 1 (MVP core auth + gate access).
 - [ ] `GET /api/users/me` — Get current user profile
 - [ ] `PATCH /api/users/me` — Update current user profile
 
+---
+
+## Sprint 2 — Community Modules — v0.2.0 — 2026-04-26
+
+**Goal**: Build all remaining empty modules — Profile, Admin Panel, Complaints, SOS Emergency, Payments, Staff Management, Amenity Booking, Events & Polls, and Notifications
+
+**Status**: IN PROGRESS
+
+**Duration**: 5 days
+
+### User Stories
+- [ ] As a user, I can view and edit my profile (name, phone, unit) (SP: 2)
+- [ ] As an admin, I can view all residents and change their roles (SP: 3)
+- [ ] As an admin, I can view all staff members and manage them (SP: 3)
+- [ ] As a resident, I can raise a complaint and track its status (SP: 3)
+- [ ] As an admin, I can view and resolve complaints (SP: 3)
+- [ ] As a resident, I can trigger an SOS emergency alert (SP: 5)
+- [ ] As a security guard, I can see active SOS alerts on their dashboard (SP: 3)
+- [ ] As a resident, I can view my payment history and pending dues (SP: 3)
+- [ ] As an admin, I can record payments for residents (SP: 2)
+- [ ] As a resident, I can book a community amenity (pool, gym, hall) (SP: 5)
+- [ ] As an admin, I can manage amenity slots and approve bookings (SP: 3)
+- [ ] As a resident, I can RSVP to community events (SP: 2)
+- [ ] As an admin, I can create and manage events and polls (SP: 3)
+- [ ] As a user, I can see my unread notifications (SP: 2)
+
+### Parallel Workstreams
+
+#### API Tasks
+- [ ] `GET/PATCH /api/users/me` — profile (already exists, verify)
+- [ ] `GET /api/admin/users` — list all users with role filter
+- [ ] `PATCH /api/admin/users/:id/role` — change user role
+- [ ] `GET/POST /api/complaints` — list + create complaints
+- [ ] `PATCH /api/complaints/:id/status` — admin resolves complaint
+- [ ] `GET/POST /api/sos` — list + trigger SOS alerts
+- [ ] `PATCH /api/sos/:id/resolve` — guard resolves SOS
+- [ ] `GET/POST /api/payments` — list + record payments
+- [ ] `GET/POST /api/amenities` — list amenities + create booking
+- [ ] `PATCH /api/amenities/bookings/:id/status` — approve/reject booking
+- [ ] `GET/POST /api/events` — list + create events
+- [ ] `POST /api/events/:id/rsvp` — resident RSVPs
+- [ ] `GET/POST /api/polls` — list + create polls
+- [ ] `POST /api/polls/:id/vote` — resident votes
+- [ ] `GET /api/notifications` — user notifications
+- [ ] `PATCH /api/notifications/:id/read` — mark as read
+
+#### UI Tasks
+- [ ] Profile page — view/edit name, phone, unit, avatar
+- [ ] Admin Panel page — user table with role management
+- [ ] Staff page — staff list with contact info
+- [ ] Complaints page — resident raise + admin resolve
+- [ ] SOS page — big emergency button + active alerts list
+- [ ] Payments page — resident dues + payment history
+- [ ] Amenity page — booking calendar + slot management
+- [ ] Events page — event cards + RSVP button
+- [ ] Polls page — active polls with vote UI
+- [ ] Notifications page — unread/read notification feed
+- [ ] Update App.tsx with all new routes
+- [ ] Update SideNav with all new links
+
 ### Definition of Done
-- TypeScript compiles with 0 errors in both modules
+- TypeScript compiles with 0 errors
 - Vite build succeeds
-- All listed API endpoints return expected `{ success, data, message }` responses
-- UI renders without console errors on all listed pages
-- Role-based access enforced (resident/guard/admin see different views)
-- CHANGELOG.md updated with v0.1.0 entry
-- QA_REPORT.md updated by qa-reviewer agent
+- All new API endpoints return `{ success, data, message }`
+- All 10 new pages render without errors
+- Deployed to Vercel + Render
+- CHANGELOG.md updated with v0.2.0
