@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { inviteVisitor, listUpcomingVisitors, visitorHistory, listAllVisitors } from '../controllers/ visitor.controller';
+import { inviteVisitor, listUpcomingVisitors, visitorHistory, listAllVisitors } from '../controllers/visitor.controller';
 import { authenticateJWT } from '../middlewares/auth.middleware';
 import { authorizeRoles } from '../middlewares/role.middleware';
 import { UserRole } from '../models/user.model';

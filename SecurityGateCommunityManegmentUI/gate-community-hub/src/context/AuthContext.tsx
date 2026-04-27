@@ -1,12 +1,11 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
-import {type JwtPayload } from "@/types/Auth";
+import { type JwtPayload } from "@/types/Auth";
 import { decodeToken, isTokenValid } from "@/utils/Auth";
 
 interface AuthContextType {
   user: JwtPayload | null;
   token: string | null;
-  login: (token: string) => void;
+  login: (token: string, refreshToken?: string) => void;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -27,17 +26,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } else {
       setUser(null);
       localStorage.removeItem("token");
+      localStorage.removeItem("refreshToken");
     }
   }, [token]);
 
-  const login = (newToken: string) => {
+  const login = (newToken: string, refreshToken?: string) => {
     setToken(newToken);
+    if (refreshToken) {
+      localStorage.setItem("refreshToken", refreshToken);
+    }
   };
 
   const logout = () => {
     setToken(null);
     setUser(null);
     localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
+    window.location.href = "/login";
   };
 
   return (
@@ -47,6 +52,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) throw new Error("useAuth must be used within AuthProvider");

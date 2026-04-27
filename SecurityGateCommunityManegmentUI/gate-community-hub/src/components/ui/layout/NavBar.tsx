@@ -27,7 +27,7 @@ export function NavBar() {
           </SheetTrigger>
           <SheetContent side="left" className="w-[240px] p-0">
             <div className="pt-12">
-              {navLinks.map((link:any) => (
+              {navLinks.map((link: { to: string; icon: React.ReactNode; iconActive: React.ReactNode; label: string }) => (
                 <div key={link.to} onClick={() => setOpen(false)}>
                   <SideNavItem
                     to={link.to}

@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { getProfile } from '../controllers/user.controller';
+import { getProfile, updateProfile } from '../controllers/user.controller';
 import { authenticateJWT } from '../middlewares/auth.middleware';
 import { authorizeRoles } from '../middlewares/role.middleware';
 import { UserRole } from '../models/user.model';
@@ -7,7 +7,7 @@ import User from '../models/user.model';
 
 const router = Router();
 
-// GET /api/users/profile (legacy)
+// GET /api/users/profile — all authenticated users
 router.get(
   '/profile',
   authenticateJWT,
@@ -15,7 +15,15 @@ router.get(
   getProfile
 );
 
-// GET /api/users/me — current user profile
+// PUT /api/users/profile — update profile
+router.put(
+  '/profile',
+  authenticateJWT,
+  authorizeRoles(UserRole.RESIDENT, UserRole.ADMIN, UserRole.SECURITY, UserRole.STAFF),
+  updateProfile
+);
+
+// GET /api/users/me — current user profile (alias)
 router.get(
   '/me',
   authenticateJWT,
@@ -31,7 +39,7 @@ router.get(
   }
 );
 
-// PATCH /api/users/me — update current user profile
+// PATCH /api/users/me — update current user profile (alias)
 router.patch(
   '/me',
   authenticateJWT,

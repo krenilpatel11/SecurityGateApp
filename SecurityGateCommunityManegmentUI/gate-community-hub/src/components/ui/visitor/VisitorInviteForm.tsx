@@ -12,7 +12,7 @@ export function VisitorInviteForm() {
     time: "",
     purpose: "Personal Visit",
   });
-  const [_loading, setLoading] = useState(false);
+  const [, setLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });

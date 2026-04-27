@@ -5,7 +5,7 @@ import { Menubar, MenubarContent, MenubarItem, MenubarMenu, MenubarTrigger } fro
 
 export function UserMenu() {
   const { user, logout } = useAuth();
-  const [_open, setOpen] = useState(false);
+  const [, setOpen] = useState(false);
 
   return (
     <div className="relative flex items-center gap-2 cursor-pointer select-none">

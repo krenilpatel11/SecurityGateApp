@@ -8,6 +8,7 @@ import { Layout } from "./components/ui/layout/Layout";
 import { ThemeProvider } from "./context/ThemeContext";
 import { QueryProvider } from "./context/QueryProvider";
 import VisitorDashboard from "./page/Visitor/VisitorDashboard";
+import VisitorLogs from "./page/Visitor/VisitorLogs";
 import DeliveryPage from "./page/Delivery/DeliveryPage";
 import AnnouncementsPage from "./page/Announcements/AnnouncementsPage";
 import ProfilePage from "./page/Profile/ProfilePage";
@@ -34,6 +35,7 @@ export default function App() {
 
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/visitor" element={<ProtectedRoute><VisitorDashboard /></ProtectedRoute>} />
+              <Route path="/visitor/logs" element={<ProtectedRoute><VisitorLogs /></ProtectedRoute>} />
               <Route path="/delivery" element={<ProtectedRoute><DeliveryPage /></ProtectedRoute>} />
               <Route path="/announcements" element={<ProtectedRoute><AnnouncementsPage /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />

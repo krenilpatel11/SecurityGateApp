@@ -4,10 +4,10 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "ts-node src/server.ts",
-    "start:prod": "node dist/server.js",
-    "build": "tsc",
-    "dev": "nodemon --watch src --exec ts-node src/server.ts"
+    "start": "node dist/server.js",
+    "dev": "nodemon --watch src --exec ts-node src/server.ts",
+    "build": "npx tsc",
+    "typecheck": "npx tsc --noEmit"
   },
   "keywords": [],
   "author": "",

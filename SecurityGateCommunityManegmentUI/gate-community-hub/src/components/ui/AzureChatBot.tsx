@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 // Extend the Window interface to include WebChat
 declare global {
   interface Window {
-    WebChat?: any;
+    WebChat?: Record<string, (...args: unknown[]) => unknown>;
   }
 }
 
@@ -22,8 +22,6 @@ export function AzureChatBot({
   userId,
   username,
   locale = "en-US",
-  height: _height = 400,
-  width: _width = 350,
 }: AzureChatBotProps) {
   const webchatRef = useRef<HTMLDivElement>(null);
 
@@ -55,9 +53,10 @@ export function AzureChatBot({
       }
     }
     // Optionally, clean up on unmount
+    const currentRef = webchatRef.current;
     return () => {
-      if (webchatRef.current) {
-        webchatRef.current.innerHTML = "";
+      if (currentRef) {
+        currentRef.innerHTML = "";
       }
     };
   }, [directLineSecret, userId, username, locale]);

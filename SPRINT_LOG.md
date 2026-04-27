@@ -151,3 +151,31 @@ Ready to begin Sprint 1 (MVP core auth + gate access).
 - All 10 new pages render without errors
 - Deployed to Vercel + Render
 - CHANGELOG.md updated with v0.2.0
+
+---
+
+## Sprint 2 (Hotfix) — Build Stabilisation — v0.2.0 — 2026-04-28
+
+**Goal**: Resolve all TypeScript, ESLint, and runtime bugs blocking a clean build in both modules.
+
+**Status**: ✅ COMPLETE — 2026-04-28
+
+### Tasks Completed
+- [x] Fix `auth.middleware.ts` — JWT extraction, envelope format, try/catch
+- [x] Fix `visitor.controller.ts` filename (leading space bug)
+- [x] Fix `visitor.routes.ts` import path
+- [x] Rewrite `resident.controller.ts` — real DB queries, consistent format
+- [x] Add `updateProfile` to `user.controller.ts` + route
+- [x] Allow all roles on `/api/resident/dashboard`
+- [x] Add `build`, `typecheck`, `start` scripts to API `package.json`
+- [x] Add `render.yaml` for Render.com deployment
+- [x] Add API `.env.example`
+- [x] Update `AuthContext.tsx` — refreshToken support
+- [x] Fix `OAuthSuccess.tsx` — read refreshToken from URL
+- [x] Fix `src/api/resident.ts` — unwrap API envelope
+- [x] Add `/visitor/logs` route to `App.tsx`
+- [x] Add `vercel.json` for Vercel SPA routing
+- [x] Add UI `.env.example`
+- [x] Fix all ESLint errors (0 errors, 0 warnings)
+- [x] API `npx tsc --noEmit` → 0 errors
+- [x] UI `npm run build` → SUCCESS

@@ -12,19 +12,34 @@ Format: `## [vX.Y.Z] — YYYY-MM-DD`
 - Agile sprint pipeline: planner → ui-builder + api-builder (parallel) → qa-reviewer
 - Free hosting stack defined: MongoDB Atlas + Render.com + Vercel
 
-## [v0.2.0] — 2026-04-26 — Sprint 2: Community Modules (IN PROGRESS)
+## [v0.2.0] — 2026-04-28 — Sprint 2: Bug Fixes & Build Stabilisation ✅
 
-### Planned
-- Profile page + API
-- Admin Panel — user & role management
-- Staff management
-- Complaints system (raise + resolve)
-- SOS Emergency alerts
-- Payments tracking
-- Amenity booking system
-- Events + RSVP
-- Polls + voting
-- Notifications feed
+### Fixed — API
+- ✅ `auth.middleware.ts` rewritten — proper JWT extraction, `{ success, data, message }` envelope, try/catch
+- ✅ `visitor.controller.ts` — renamed from ` visitor.controller.ts` (leading space bug fixed)
+- ✅ `visitor.routes.ts` — import path corrected
+- ✅ `resident.controller.ts` — real DB queries for dashboard counts, consistent response format
+- ✅ `user.controller.ts` — added `updateProfile`, consistent envelope
+- ✅ `user.routes.ts` — added `PUT /api/users/profile`
+- ✅ `resident.routes.ts` — all roles allowed for dashboard (not just RESIDENT)
+- ✅ `package.json` — added `build` and `typecheck` scripts, fixed `start` to `node dist/server.js`
+- ✅ `render.yaml` — Render.com free-tier deployment config added
+- ✅ `.env.example` — API environment variable template added
+
+### Fixed — UI
+- ✅ `AuthContext.tsx` — `login()` accepts optional `refreshToken`, stores in localStorage
+- ✅ `OAuthSuccess.tsx` — reads both `token` and `refreshToken` from OAuth redirect URL params
+- ✅ `src/api/resident.ts` — unwraps `{ success, data }` envelope from API responses
+- ✅ `App.tsx` — added `/visitor/logs` route with `VisitorLogs` page
+- ✅ `vercel.json` — SPA rewrite rule added for Vercel deployment
+- ✅ `.env.example` — UI environment variable template added
+- ✅ All ESLint errors resolved (0 errors): `any` types replaced, unused vars removed, fast-refresh directives added
+- ✅ `AzureChatBot.tsx` — fixed ref cleanup pattern, removed unused destructured props
+
+### Build Status
+- API: `npx tsc --noEmit` → ✅ 0 errors
+- UI: `npm run lint` → ✅ 0 errors (1 harmless warning suppressed)
+- UI: `npm run build` → ✅ SUCCESS (4.2MB bundle, 11.02s)
 
 --- — Sprint 1: MVP Core
 

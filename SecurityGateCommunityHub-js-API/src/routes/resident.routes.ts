@@ -9,21 +9,21 @@ const router = Router();
 router.get(
   '/profile',
   authenticateJWT,
-  authorizeRoles(UserRole.RESIDENT),
+  authorizeRoles(UserRole.RESIDENT, UserRole.ADMIN, UserRole.SECURITY, UserRole.STAFF),
   getProfile
 );
 
 router.put(
   '/profile',
   authenticateJWT,
-  authorizeRoles(UserRole.RESIDENT),
+  authorizeRoles(UserRole.RESIDENT, UserRole.ADMIN, UserRole.SECURITY, UserRole.STAFF),
   updateProfile
 );
 
 router.get(
   '/dashboard',
   authenticateJWT,
-  authorizeRoles(UserRole.RESIDENT),
+  authorizeRoles(UserRole.RESIDENT, UserRole.ADMIN, UserRole.SECURITY, UserRole.STAFF),
   getDashboardData
 );
 

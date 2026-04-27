@@ -20,6 +20,7 @@ import { Card } from "../card";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../tooltip";
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const navLinks: { to: string; icon: React.ReactNode; iconActive: React.ReactNode; label: string }[] = [
   { to: "/dashboard", icon: <MdOutlineDashboard />, iconActive: <MdDashboard />, label: "Dashboard" },
   { to: "/visitor", icon: <MdPeopleOutline />, iconActive: <MdPeople />, label: "Visitors" },
