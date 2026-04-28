@@ -1,18 +1,19 @@
 services:
   - type: web
-    name: securitygateapp
-    runtime: node
+    name: security-gate-api
+    env: node
     region: oregon
     plan: free
     rootDir: SecurityGateCommunityHub-js-API
     buildCommand: npm install && npm run build
-    startCommand: npm run start:prod
+    startCommand: node dist/server.js
+    healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
-        value: 10000
-      - key: MONGO_URI
+        value: 5001
+      - key: MONGODB_URI
         sync: false
       - key: JWT_SECRET
         sync: false
@@ -25,6 +26,6 @@ services:
       - key: GOOGLE_CLIENT_SECRET
         sync: false
       - key: GOOGLE_CALLBACK_URL
-        value: https://securitygateapp.onrender.com/api/auth/google/callback
+        sync: false
       - key: FRONTEND_URL
-        value: https://gate-community-hub.vercel.app
+        sync: false
