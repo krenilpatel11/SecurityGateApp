@@ -12,6 +12,35 @@ Format: `## [vX.Y.Z] — YYYY-MM-DD`
 - Agile sprint pipeline: planner → ui-builder + api-builder (parallel) → qa-reviewer
 - Free hosting stack defined: MongoDB Atlas + Render.com + Vercel
 
+## [v0.3.0] — 2026-04-29 — Sprint 3: Full Community Modules ✅
+
+### Added — API
+- ✅ `GET /api/visitor/my` — resident views all their own invited visitors
+- ✅ `src/scripts/seedAll.ts` — comprehensive seed script (5 users, 6 visitors, 5 payments, 5 complaints, 3 announcements, 4 amenities, 3 bookings, 3 events, 2 polls, 2 SOS, 7 notifications)
+- ✅ `visitor.controller.ts` fully rewritten — no `any` types, consistent `{ success, data, message }` envelope on all 5 endpoints
+
+### Improved — UI Pages (all fully functional, role-aware, with loading/empty states)
+- ✅ `VisitorDashboard` — role-based: resident (invite form + my visitors list) vs guard/admin (full table with check-in/out/deny actions + walk-in modal)
+- ✅ `Dashboard` — quick actions row, real announcements feed, upcoming events timeline, colored stats cards
+- ✅ `ComplaintsPage` — category filter tabs, status filter, colored badges, admin update/resolve modal with resolution notes
+- ✅ `PaymentsPage` — summary cards (due/paid/total), month filter, confirm-pay modal, admin record payment with resident selector
+- ✅ `AmenityPage` — amenity cards with capacity badge, visual time slot grid booking modal, admin approve/reject bookings
+- ✅ `NotificationsPage` — grouped by date (Today/Yesterday/Earlier), unread count badge, type icons, mark-all-read
+- ✅ `SOSPage` — pulsing red SOS button for residents, confirm modal, active alerts with resolve button, auto-refresh 15s
+- ✅ `CommunityPage` — events with RSVP tracking, polls with progress bars + vote buttons, admin create modals
+- ✅ `StaffPage` — grouped by role (Security/Staff), search, on-duty indicator
+- ✅ `AdminPage` — user table with inline role change, confirm dialog, stats row, search
+
+### Fixed — Types
+- ✅ `types/visitor.ts` — `checkInTime`, `checkOutTime`, `unit`, `photoUrl`, `invitedBy` all made optional; added `Completed` status
+- ✅ `api/visitor.ts` — `inviteVisitor` now accepts `visitDate`/`visitTime` instead of `checkInTime`; added `getMyVisitors`
+- ✅ Visitor components — `checkInTime ?? ''` guard on all `new Date()` calls
+
+### Build Status
+- API: `npx tsc --noEmit` → ✅ 0 errors
+- UI: `npm run lint` → ✅ 0 errors, 0 warnings
+- UI: `npm run build` → ✅ SUCCESS (4.2MB bundle, 10.08s)
+
 ## [v0.2.0] — 2026-04-28 — Sprint 2: Bug Fixes & Build Stabilisation ✅
 
 ### Fixed — API

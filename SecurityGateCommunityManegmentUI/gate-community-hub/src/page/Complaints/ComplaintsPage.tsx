@@ -1,25 +1,35 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getComplaints, createComplaint, updateComplaintStatus, type Complaint } from '@/api/complaints';
-import { MessageSquareWarning, Plus, X } from 'lucide-react';
+import { MessageSquareWarning, Plus, X, ChevronDown } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 
-const CATEGORIES = ['Maintenance', 'Noise', 'Security', 'Cleanliness', 'Parking', 'Other'];
-const STATUSES = ['Open', 'In Progress', 'Resolved', 'Closed'];
+const CATEGORIES = ['All', 'Maintenance', 'Noise', 'Security', 'Cleanliness', 'Parking', 'Other'];
+const STATUSES = ['All', 'Open', 'In Progress', 'Resolved', 'Closed'];
 
 const statusColor: Record<string, string> = {
-  Open: 'bg-yellow-100 text-yellow-700',
-  'In Progress': 'bg-blue-100 text-blue-700',
-  Resolved: 'bg-green-100 text-green-700',
-  Closed: 'bg-gray-100 text-gray-600',
+  Open: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300',
+  'In Progress': 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
+  Resolved: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
+  Closed: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',
 };
 
 export default function ComplaintsPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const isAdmin = user?.role === 'admin' || user?.role === 'security';
+
   const [showModal, setShowModal] = useState(false);
-  const [form, setForm] = useState({ title: '', description: '', category: CATEGORIES[0] });
+  const [categoryFilter, setCategoryFilter] = useState('All');
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [form, setForm] = useState({ title: '', description: '', category: 'Maintenance' });
+  const [resolveModal, setResolveModal] = useState<Complaint | null>(null);
+  const [resolution, setResolution] = useState('');
+  const [resolveStatus, setResolveStatus] = useState('Resolved');
 
   const { data: complaints = [], isLoading } = useQuery<Complaint[]>({
     queryKey: ['complaints'],
@@ -27,112 +37,143 @@ export default function ComplaintsPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: createComplaint,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['complaints'] });
-      setShowModal(false);
-      setForm({ title: '', description: '', category: CATEGORIES[0] });
-    },
-    onError: () => alert('Failed to raise complaint.'),
+    mutationFn: () => createComplaint({ title: form.title, description: form.description, category: form.category }),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['complaints'] }); setShowModal(false); setForm({ title: '', description: '', category: 'Maintenance' }); },
   });
 
-  const statusMutation = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: string }) => updateComplaintStatus(id, status),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['complaints'] }),
+  const updateMutation = useMutation({
+    mutationFn: ({ id, status, res }: { id: string; status: string; res?: string }) => updateComplaintStatus(id, status, res),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['complaints'] }); setResolveModal(null); setResolution(''); },
+  });
+
+  const filtered = complaints.filter(c => {
+    const catOk = categoryFilter === 'All' || c.category === categoryFilter;
+    const statOk = statusFilter === 'All' || c.status === statusFilter;
+    return catOk && statOk;
   });
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <MessageSquareWarning className="w-7 h-7 text-orange-600" />
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Complaints</h1>
-        </div>
+        <h1 className="text-2xl font-bold flex items-center gap-2"><MessageSquareWarning className="w-6 h-6 text-orange-500" /> Complaints</h1>
         {!isAdmin && (
-          <button
-            onClick={() => setShowModal(true)}
-            className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
-          >
+          <Button onClick={() => setShowModal(true)} className="flex items-center gap-2">
             <Plus className="w-4 h-4" /> Raise Complaint
-          </button>
+          </Button>
         )}
       </div>
 
-      {/* List */}
-      {isLoading ? (
-        <div className="flex items-center justify-center h-40">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500" />
-        </div>
-      ) : complaints.length === 0 ? (
-        <div className="flex flex-col items-center justify-center h-40 text-gray-400">
-          <MessageSquareWarning className="w-10 h-10 mb-2" />
-          <p>No complaints found</p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {complaints.map((c) => (
-            <div key={c._id} className="bg-white dark:bg-gray-800 rounded-xl shadow p-5">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-semibold text-gray-900 dark:text-white">{c.title}</h3>
-                    <span className="px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">{c.category}</span>
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusColor[c.status] ?? 'bg-gray-100 text-gray-600'}`}>{c.status}</span>
-                  </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{c.description}</p>
-                  <p className="text-xs text-gray-400 mt-1">By {c.raisedBy?.name} {c.raisedBy?.unit ? `· Unit ${c.raisedBy.unit}` : ''} · {new Date(c.createdAt).toLocaleDateString()}</p>
-                  {c.resolution && <p className="text-sm text-green-600 dark:text-green-400 mt-1">Resolution: {c.resolution}</p>}
-                </div>
-                {isAdmin && (
-                  <select
-                    value={c.status}
-                    onChange={(e) => statusMutation.mutate({ id: c._id, status: e.target.value })}
-                    className="border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-xs bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  >
-                    {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                )}
-              </div>
-            </div>
+      {/* Stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {['Open', 'In Progress', 'Resolved', 'Closed'].map(s => (
+          <Card key={s} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setStatusFilter(s)}>
+            <CardContent className="p-4 text-center">
+              <p className="text-2xl font-bold">{complaints.filter(c => c.status === s).length}</p>
+              <Badge className={`mt-1 text-xs ${statusColor[s]}`}>{s}</Badge>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Filters */}
+      <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-1 flex-wrap">
+          {CATEGORIES.map(c => (
+            <button key={c} onClick={() => setCategoryFilter(c)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${categoryFilter === c ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}>{c}</button>
           ))}
+        </div>
+        <div className="relative">
+          <select className="border rounded-lg px-3 py-1.5 bg-background text-sm appearance-none pr-8" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+            {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+          <ChevronDown className="absolute right-2 top-2 w-4 h-4 pointer-events-none text-muted-foreground" />
+        </div>
+      </div>
+
+      {/* Create Modal */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <Card className="w-full max-w-md mx-4">
+            <CardContent className="p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Raise a Complaint</h2>
+                <button onClick={() => setShowModal(false)}><X className="w-5 h-5" /></button>
+              </div>
+              <input className="w-full border rounded-lg px-3 py-2 bg-background text-sm" placeholder="Title *" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} />
+              <textarea className="w-full border rounded-lg px-3 py-2 bg-background text-sm resize-none" rows={3} placeholder="Describe the issue *" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
+              <select className="w-full border rounded-lg px-3 py-2 bg-background text-sm" value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}>
+                {CATEGORIES.slice(1).map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+              <div className="flex gap-2 pt-2">
+                <Button variant="outline" className="flex-1" onClick={() => setShowModal(false)}>Cancel</Button>
+                <Button className="flex-1" onClick={() => createMutation.mutate()} disabled={!form.title || !form.description || createMutation.isPending}>
+                  {createMutation.isPending ? 'Submitting...' : 'Submit'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
 
-      {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Raise a Complaint</h2>
-              <button onClick={() => setShowModal(false)}><X className="w-5 h-5 text-gray-500" /></button>
-            </div>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Title</label>
-                <input type="text" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500" />
+      {/* Resolve Modal */}
+      {resolveModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <Card className="w-full max-w-md mx-4">
+            <CardContent className="p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Update Complaint</h2>
+                <button onClick={() => setResolveModal(null)}><X className="w-5 h-5" /></button>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
-                <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}
-                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500">
-                  {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-                </select>
+              <p className="text-sm text-muted-foreground">{resolveModal.title}</p>
+              <select className="w-full border rounded-lg px-3 py-2 bg-background text-sm" value={resolveStatus} onChange={e => setResolveStatus(e.target.value)}>
+                {['In Progress', 'Resolved', 'Closed'].map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+              <textarea className="w-full border rounded-lg px-3 py-2 bg-background text-sm resize-none" rows={3} placeholder="Resolution notes (optional)" value={resolution} onChange={e => setResolution(e.target.value)} />
+              <div className="flex gap-2 pt-2">
+                <Button variant="outline" className="flex-1" onClick={() => setResolveModal(null)}>Cancel</Button>
+                <Button className="flex-1" onClick={() => updateMutation.mutate({ id: resolveModal._id, status: resolveStatus, res: resolution })} disabled={updateMutation.isPending}>
+                  {updateMutation.isPending ? 'Updating...' : 'Update'}
+                </Button>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
-                <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3}
-                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500" />
-              </div>
-            </div>
-            <div className="flex gap-3 justify-end">
-              <button onClick={() => setShowModal(false)} className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800">Cancel</button>
-              <button onClick={() => createMutation.mutate(form)} disabled={createMutation.isPending || !form.title || !form.description}
-                className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50">
-                {createMutation.isPending ? 'Submitting...' : 'Submit'}
-              </button>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* List */}
+      {isLoading ? (
+        <div className="space-y-3">{[...Array(4)].map((_, i) => <Skeleton key={i} className="h-24 w-full rounded-xl" />)}</div>
+      ) : filtered.length === 0 ? (
+        <Card><CardContent className="p-12 text-center"><MessageSquareWarning className="w-12 h-12 text-muted-foreground mx-auto mb-3" /><p className="text-muted-foreground">No complaints found.</p></CardContent></Card>
+      ) : (
+        <div className="space-y-3">
+          {filtered.map(c => (
+            <Card key={c._id} className="hover:shadow-md transition-shadow">
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-medium">{c.title}</p>
+                      <Badge className={`text-xs ${statusColor[c.status]}`}>{c.status}</Badge>
+                      <span className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full">{c.category}</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{c.description}</p>
+                    <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+                      <span>By: {c.raisedBy?.name ?? 'Unknown'}</span>
+                      {c.raisedBy?.unit && <span>· Unit {c.raisedBy.unit}</span>}
+                      <span>· {new Date(c.createdAt).toLocaleDateString()}</span>
+                    </div>
+                    {c.resolution && <p className="text-xs text-green-700 dark:text-green-400 mt-1 bg-green-50 dark:bg-green-950 px-2 py-1 rounded">✓ {c.resolution}</p>}
+                  </div>
+                  {isAdmin && (c.status === 'Open' || c.status === 'In Progress') && (
+                    <Button variant="outline" className="text-xs flex-shrink-0" onClick={() => { setResolveModal(c); setResolveStatus('In Progress'); }}>
+                      Update
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
     </div>

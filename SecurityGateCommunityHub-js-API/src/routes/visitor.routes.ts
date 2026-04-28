@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { inviteVisitor, listUpcomingVisitors, visitorHistory, listAllVisitors } from '../controllers/visitor.controller';
+import { inviteVisitor, listUpcomingVisitors, visitorHistory, listAllVisitors, listMyVisitors } from '../controllers/visitor.controller';
 import { authenticateJWT } from '../middlewares/auth.middleware';
 import { authorizeRoles } from '../middlewares/role.middleware';
 import { UserRole } from '../models/user.model';
@@ -13,6 +13,14 @@ router.post(
   authenticateJWT,
   authorizeRoles(UserRole.RESIDENT),
   inviteVisitor
+);
+
+// Resident views all their invited visitors
+router.get(
+  '/my',
+  authenticateJWT,
+  authorizeRoles(UserRole.RESIDENT),
+  listMyVisitors
 );
 
 // Resident views upcoming (pre-approved) visitors

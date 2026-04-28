@@ -35,7 +35,7 @@ export function VisitorTableRow({ visitor, onClick }: Props) {
         <Badge className={categoryColors[visitor.category]}>{visitor.category}</Badge>
       </td>
       <td className="py-2 px-2">
-        <div>{new Date(visitor.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+        <div>{new Date(visitor.checkInTime ?? '').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
         <div className="text-xs text-muted-foreground">{visitor.entryPoint}</div>
       </td>
       <td className="py-2 px-2">

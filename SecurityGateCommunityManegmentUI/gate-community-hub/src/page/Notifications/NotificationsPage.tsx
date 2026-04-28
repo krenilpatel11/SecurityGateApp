@@ -1,12 +1,18 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getNotifications, markRead, markAllRead, type AppNotification } from '@/api/notifications';
-import { Bell, CheckCheck, Info, AlertTriangle, Package, Megaphone } from 'lucide-react';
+import { Bell, CheckCheck, AlertTriangle, Package, Megaphone, Info, Users } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/Button';
+import { Skeleton } from '@/components/ui/skeleton';
 
-const typeIcon: Record<string, React.ReactNode> = {
-  sos: <AlertTriangle className="w-5 h-5 text-red-500" />,
-  delivery: <Package className="w-5 h-5 text-blue-500" />,
-  announcement: <Megaphone className="w-5 h-5 text-purple-500" />,
-  default: <Info className="w-5 h-5 text-gray-400" />,
+const typeConfig: Record<string, { icon: React.ReactNode; color: string }> = {
+  sos: { icon: <AlertTriangle className="w-4 h-4" />, color: 'text-red-500 bg-red-50 dark:bg-red-950' },
+  delivery: { icon: <Package className="w-4 h-4" />, color: 'text-blue-500 bg-blue-50 dark:bg-blue-950' },
+  announcement: { icon: <Megaphone className="w-4 h-4" />, color: 'text-purple-500 bg-purple-50 dark:bg-purple-950' },
+  visitor: { icon: <Users className="w-4 h-4" />, color: 'text-green-500 bg-green-50 dark:bg-green-950' },
+  payment: { icon: <Package className="w-4 h-4" />, color: 'text-orange-500 bg-orange-50 dark:bg-orange-950' },
+  complaint: { icon: <AlertTriangle className="w-4 h-4" />, color: 'text-yellow-500 bg-yellow-50 dark:bg-yellow-950' },
+  default: { icon: <Info className="w-4 h-4" />, color: 'text-gray-500 bg-gray-50 dark:bg-gray-900' },
 };
 
 function timeAgo(dateStr: string): string {
@@ -16,7 +22,22 @@ function timeAgo(dateStr: string): string {
   if (mins < 60) return `${mins}m ago`;
   const hrs = Math.floor(mins / 60);
   if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.floor(hrs / 24)}d ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days}d ago`;
+  return new Date(dateStr).toLocaleDateString();
+}
+
+function groupByDate(notifications: AppNotification[]) {
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const yesterday = new Date(today.getTime() - 86400000);
+  const groups: Record<string, AppNotification[]> = { Today: [], Yesterday: [], Earlier: [] };
+  for (const n of notifications) {
+    const d = new Date(n.createdAt); d.setHours(0, 0, 0, 0);
+    if (d.getTime() === today.getTime()) groups.Today.push(n);
+    else if (d.getTime() === yesterday.getTime()) groups.Yesterday.push(n);
+    else groups.Earlier.push(n);
+  }
+  return groups;
 }
 
 export default function NotificationsPage() {
@@ -37,62 +58,60 @@ export default function NotificationsPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
   });
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadCount = notifications.filter(n => !n.read).length;
+  const groups = groupByDate(notifications);
 
   return (
-    <div className="p-6 max-w-2xl mx-auto space-y-6">
+    <div className="space-y-6 max-w-2xl mx-auto">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Bell className="w-7 h-7 text-blue-600" />
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Notifications</h1>
-          {unreadCount > 0 && (
-            <span className="bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">{unreadCount}</span>
-          )}
-        </div>
+        <h1 className="text-2xl font-bold flex items-center gap-2">
+          <Bell className="w-6 h-6 text-primary" /> Notifications
+          {unreadCount > 0 && <span className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5">{unreadCount}</span>}
+        </h1>
         {unreadCount > 0 && (
-          <button onClick={() => markAllMutation.mutate()} disabled={markAllMutation.isPending}
-            className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 disabled:opacity-50">
+          <Button variant="outline" className="flex items-center gap-2 text-sm" onClick={() => markAllMutation.mutate()} disabled={markAllMutation.isPending}>
             <CheckCheck className="w-4 h-4" /> Mark all read
-          </button>
+          </Button>
         )}
       </div>
 
       {isLoading ? (
-        <div className="flex items-center justify-center h-40">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
-        </div>
+        <div className="space-y-3">{[...Array(5)].map((_, i) => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}</div>
       ) : notifications.length === 0 ? (
-        <div className="flex flex-col items-center justify-center h-40 text-gray-400">
-          <Bell className="w-10 h-10 mb-2" />
-          <p>No notifications yet</p>
-        </div>
+        <Card>
+          <CardContent className="p-16 text-center">
+            <Bell className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+            <p className="text-lg font-medium">You're all caught up! 🎉</p>
+            <p className="text-sm text-muted-foreground mt-1">No notifications yet.</p>
+          </CardContent>
+        </Card>
       ) : (
-        <div className="space-y-2">
-          {notifications.map((n) => (
-            <div
-              key={n._id}
-              onClick={() => { if (!n.read) markReadMutation.mutate(n._id); }}
-              className={`flex items-start gap-4 p-4 rounded-xl border cursor-pointer transition-colors ${
-                n.read
-                  ? 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700'
-                  : 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
-              }`}
-            >
-              <div className="flex-shrink-0 mt-0.5">
-                {typeIcon[n.type] ?? typeIcon.default}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className={`text-sm ${n.read ? 'text-gray-600 dark:text-gray-400' : 'text-gray-900 dark:text-white font-medium'}`}>
-                  {n.message}
-                </p>
-                <p className="text-xs text-gray-400 mt-0.5">{timeAgo(n.createdAt)}</p>
-              </div>
-              {!n.read && (
-                <div className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0 mt-1.5" />
-              )}
-            </div>
-          ))}
-        </div>
+        Object.entries(groups).map(([group, items]) => items.length === 0 ? null : (
+          <div key={group}>
+            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">{group}</h2>
+            <Card>
+              <CardContent className="p-0 divide-y">
+                {items.map(n => {
+                  const cfg = typeConfig[n.type] ?? typeConfig.default;
+                  return (
+                    <div
+                      key={n._id}
+                      className={`flex items-start gap-3 p-4 cursor-pointer hover:bg-muted/50 transition-colors ${!n.read ? 'bg-primary/5' : ''}`}
+                      onClick={() => !n.read && markReadMutation.mutate(n._id)}
+                    >
+                      <div className={`p-2 rounded-full flex-shrink-0 ${cfg.color}`}>{cfg.icon}</div>
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-sm leading-snug ${!n.read ? 'font-medium' : 'text-muted-foreground'}`}>{n.message}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{timeAgo(n.createdAt)}</p>
+                      </div>
+                      {!n.read && <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0 mt-2" />}
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
+          </div>
+        ))
       )}
     </div>
   );

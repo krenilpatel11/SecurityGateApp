@@ -24,8 +24,8 @@ export function VisitorInviteForm() {
     await inviteVisitor({
       name: form.name,
       purpose: form.purpose,
-      checkInTime: new Date(`${form.date}T${form.time}`).toISOString(),
-      // Add other fields as needed
+      visitDate: form.date,
+      visitTime: form.time,
     });
     setLoading(false);
     // Optionally show a toast or reset form

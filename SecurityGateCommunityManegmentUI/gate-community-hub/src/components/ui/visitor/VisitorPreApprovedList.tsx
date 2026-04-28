@@ -24,7 +24,7 @@ export function VisitorPreApprovedList() {
               <img src={v.photoUrl} alt={v.name} className="w-8 h-8 rounded-full" />
               <div className="flex-1">
                 <div className="font-medium">{v.name}</div>
-                <div className="text-xs text-muted-foreground">{v.purpose} • {new Date(v.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                <div className="text-xs text-muted-foreground">{v.purpose} • {new Date(v.checkInTime ?? '').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
               </div>
               <Badge variant={v.status === "Approved" ? "default" : "destructive"}>
                 {v.status}

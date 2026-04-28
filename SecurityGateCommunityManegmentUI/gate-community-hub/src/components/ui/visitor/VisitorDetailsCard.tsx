@@ -27,7 +27,7 @@ export function VisitorDetailsCard({ visitor }: Props) {
         </div>
         <div>
           <span className="font-medium">Check-in Time: </span>
-          {new Date(visitor.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          {new Date(visitor.checkInTime ?? '').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </div>
         <div>
           <span className="font-medium">Entry Point: </span>

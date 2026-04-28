@@ -179,3 +179,32 @@ Ready to begin Sprint 1 (MVP core auth + gate access).
 - [x] Fix all ESLint errors (0 errors, 0 warnings)
 - [x] API `npx tsc --noEmit` → 0 errors
 - [x] UI `npm run build` → SUCCESS
+
+---
+
+## Sprint 3 — Full Community Modules — v0.3.0 — 2026-04-29
+
+**Goal**: Complete all community module pages with real data, role-based views, and polished UX.
+
+**Status**: ✅ COMPLETE — 2026-04-29
+
+### Tasks Completed
+- [x] Rewrite `visitor.controller.ts` — no `any`, consistent envelope, 5 endpoints
+- [x] Add `GET /api/visitor/my` endpoint + route
+- [x] Create `seedAll.ts` — seeds all 11 models with realistic data
+- [x] Rewrite `VisitorDashboard` — role-based resident vs guard/admin views
+- [x] Improve `Dashboard` — quick actions, announcements feed, events timeline
+- [x] Improve `ComplaintsPage` — filters, admin resolve modal
+- [x] Improve `PaymentsPage` — summary cards, month filter, confirm-pay
+- [x] Improve `AmenityPage` — time slot grid, admin approve/reject
+- [x] Improve `NotificationsPage` — date grouping, type icons, mark-all-read
+- [x] Improve `SOSPage` — pulsing button, confirm modal, auto-refresh
+- [x] Improve `CommunityPage` — events RSVP, polls with progress bars
+- [x] Improve `StaffPage` — grouped by role, search
+- [x] Improve `AdminPage` — inline role change, confirm dialog, stats
+- [x] Fix `types/visitor.ts` — all optional fields, added Completed status
+- [x] Fix `api/visitor.ts` — typed inviteVisitor, added getMyVisitors
+- [x] Fix visitor components — optional checkInTime guards
+- [x] API `npx tsc --noEmit` → 0 errors
+- [x] UI `npm run lint` → 0 errors
+- [x] UI `npm run build` → SUCCESS (4.2MB, 10.08s)

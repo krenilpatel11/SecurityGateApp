@@ -7,8 +7,22 @@ interface ApiResponse<T> {
   message: string;
 }
 
+// Get current resident's own visitors (GET /api/visitor/my)
+export async function getMyVisitors(): Promise<Visitor[]> {
+  const res = await api.get<ApiResponse<Visitor[]>>("/visitor/my");
+  return res.data.data ?? (res.data as unknown as Visitor[]);
+}
+
 // Invite a visitor (POST /api/visitor/invite)
-export async function inviteVisitor(data: Partial<Visitor>): Promise<Visitor> {
+export async function inviteVisitor(data: {
+  name: string;
+  purpose: string;
+  category?: Visitor["category"];
+  visitDate?: string;
+  visitTime?: string;
+  unit?: string;
+  entryPoint?: string;
+}): Promise<Visitor> {
   const res = await api.post<ApiResponse<Visitor>>("/visitor/invite", data);
   return res.data.data ?? (res.data as unknown as Visitor);
 }

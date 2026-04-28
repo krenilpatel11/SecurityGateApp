@@ -1,14 +1,18 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getPayments, recordPayment, markPaid, type Payment } from '@/api/payments';
-import { CreditCard, Plus, X, CheckCircle } from 'lucide-react';
+import { CreditCard, Plus, X, CheckCircle, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { getAllUsers } from '@/api/admin';
 import type { UserProfile } from '@/api/profile';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const statusColor: Record<string, string> = {
-  Pending: 'bg-yellow-100 text-yellow-700',
-  Paid: 'bg-green-100 text-green-700',
+  Pending: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300',
+  Paid: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
 };
 
 export default function PaymentsPage() {
@@ -16,7 +20,10 @@ export default function PaymentsPage() {
   const queryClient = useQueryClient();
   const isAdmin = user?.role === 'admin';
   const [showModal, setShowModal] = useState(false);
-  const [form, setForm] = useState({ residentId: '', amount: '', description: '', month: '' });
+  const [monthFilter, setMonthFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [form, setForm] = useState({ residentId: '', amount: '', description: 'Monthly Maintenance Fee', month: '' });
+  const [confirmPay, setConfirmPay] = useState<Payment | null>(null);
 
   const { data: payments = [], isLoading } = useQuery<Payment[]>({
     queryKey: ['payments'],
@@ -31,141 +38,133 @@ export default function PaymentsPage() {
 
   const recordMutation = useMutation({
     mutationFn: () => recordPayment({ residentId: form.residentId, amount: Number(form.amount), description: form.description, month: form.month }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['payments'] });
-      setShowModal(false);
-      setForm({ residentId: '', amount: '', description: '', month: '' });
-    },
-    onError: () => alert('Failed to record payment.'),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['payments'] }); setShowModal(false); setForm({ residentId: '', amount: '', description: 'Monthly Maintenance Fee', month: '' }); },
   });
 
-  const paidMutation = useMutation({
+  const markPaidMutation = useMutation({
     mutationFn: markPaid,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['payments'] }),
-    onError: () => alert('Failed to mark as paid.'),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['payments'] }); setConfirmPay(null); },
   });
 
-  const pendingTotal = payments.filter((p) => p.status === 'Pending').reduce((sum, p) => sum + p.amount, 0);
+  const filtered = payments.filter(p => {
+    const monthOk = !monthFilter || p.month === monthFilter;
+    const statOk = !statusFilter || p.status === statusFilter;
+    return monthOk && statOk;
+  });
+
+  const totalDue = payments.filter(p => p.status === 'Pending').reduce((s, p) => s + p.amount, 0);
+  const totalPaid = payments.filter(p => p.status === 'Paid').reduce((s, p) => s + p.amount, 0);
+  const months = [...new Set(payments.map(p => p.month))].sort().reverse();
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <CreditCard className="w-7 h-7 text-indigo-600" />
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Payments</h1>
-        </div>
-        {isAdmin && (
-          <button onClick={() => setShowModal(true)}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
-            <Plus className="w-4 h-4" /> Record Payment
-          </button>
-        )}
+        <h1 className="text-2xl font-bold flex items-center gap-2"><CreditCard className="w-6 h-6 text-green-600" /> Payments</h1>
+        {isAdmin && <Button onClick={() => setShowModal(true)} className="flex items-center gap-2"><Plus className="w-4 h-4" /> Record Payment</Button>}
       </div>
 
-      {/* Summary */}
-      {!isAdmin && (
-        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-4 flex items-center gap-4">
-          <CreditCard className="w-8 h-8 text-yellow-600" />
-          <div>
-            <p className="text-sm text-yellow-700 dark:text-yellow-400 font-medium">Total Pending</p>
-            <p className="text-2xl font-bold text-yellow-800 dark:text-yellow-300">₹{pendingTotal.toLocaleString()}</p>
-          </div>
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <Card className="bg-yellow-50 dark:bg-yellow-950/30 border-none">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div><p className="text-sm text-yellow-700 dark:text-yellow-300 font-medium">Amount Due</p><p className="text-2xl font-bold text-yellow-900 dark:text-yellow-100">${totalDue.toLocaleString()}</p></div>
+            <AlertCircle className="w-8 h-8 text-yellow-500" />
+          </CardContent>
+        </Card>
+        <Card className="bg-green-50 dark:bg-green-950/30 border-none">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div><p className="text-sm text-green-700 dark:text-green-300 font-medium">Paid This Period</p><p className="text-2xl font-bold text-green-900 dark:text-green-100">${totalPaid.toLocaleString()}</p></div>
+            <CheckCircle className="w-8 h-8 text-green-500" />
+          </CardContent>
+        </Card>
+        <Card className="bg-blue-50 dark:bg-blue-950/30 border-none">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div><p className="text-sm text-blue-700 dark:text-blue-300 font-medium">Total Records</p><p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{payments.length}</p></div>
+            <CreditCard className="w-8 h-8 text-blue-500" />
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filters */}
+      <div className="flex gap-2 flex-wrap">
+        <select className="border rounded-lg px-3 py-2 bg-background text-sm" value={monthFilter} onChange={e => setMonthFilter(e.target.value)}>
+          <option value="">All Months</option>
+          {months.map(m => <option key={m} value={m}>{m}</option>)}
+        </select>
+        <select className="border rounded-lg px-3 py-2 bg-background text-sm" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+          <option value="">All Statuses</option>
+          <option value="Pending">Pending</option>
+          <option value="Paid">Paid</option>
+        </select>
+      </div>
+
+      {/* Record Payment Modal */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <Card className="w-full max-w-md mx-4">
+            <CardContent className="p-6 space-y-4">
+              <div className="flex items-center justify-between"><h2 className="text-lg font-semibold">Record Payment</h2><button onClick={() => setShowModal(false)}><X className="w-5 h-5" /></button></div>
+              <select className="w-full border rounded-lg px-3 py-2 bg-background text-sm" value={form.residentId} onChange={e => setForm(f => ({ ...f, residentId: e.target.value }))}>
+                <option value="">Select Resident *</option>
+                {residents.map(r => <option key={r._id} value={r._id}>{r.name} — {r.unit ?? 'No unit'}</option>)}
+              </select>
+              <input className="w-full border rounded-lg px-3 py-2 bg-background text-sm" type="number" placeholder="Amount ($) *" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} />
+              <input className="w-full border rounded-lg px-3 py-2 bg-background text-sm" placeholder="Description *" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
+              <input className="w-full border rounded-lg px-3 py-2 bg-background text-sm" type="month" value={form.month} onChange={e => setForm(f => ({ ...f, month: e.target.value }))} />
+              <div className="flex gap-2"><Button variant="outline" className="flex-1" onClick={() => setShowModal(false)}>Cancel</Button><Button className="flex-1" onClick={() => recordMutation.mutate()} disabled={!form.residentId || !form.amount || !form.month || recordMutation.isPending}>{recordMutation.isPending ? 'Recording...' : 'Record'}</Button></div>
+            </CardContent>
+          </Card>
         </div>
       )}
 
-      {/* Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden">
-        {isLoading ? (
-          <div className="flex items-center justify-center h-40">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500" />
-          </div>
-        ) : payments.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-40 text-gray-400">
-            <CreditCard className="w-10 h-10 mb-2" />
-            <p>No payment records found</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 uppercase text-xs">
-                <tr>
-                  {isAdmin && <th className="px-4 py-3 text-left">Resident</th>}
-                  <th className="px-4 py-3 text-left">Month</th>
-                  <th className="px-4 py-3 text-left">Description</th>
-                  <th className="px-4 py-3 text-left">Amount</th>
-                  <th className="px-4 py-3 text-left">Status</th>
-                  {isAdmin && <th className="px-4 py-3 text-left">Action</th>}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                {payments.map((p) => (
-                  <tr key={p._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                    {isAdmin && <td className="px-4 py-3 text-gray-900 dark:text-white">{p.resident?.name} <span className="text-gray-400 text-xs">{p.resident?.unit}</span></td>}
-                    <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{p.month}</td>
-                    <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{p.description}</td>
-                    <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">₹{p.amount.toLocaleString()}</td>
-                    <td className="px-4 py-3">
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusColor[p.status]}`}>{p.status}</span>
-                    </td>
-                    {isAdmin && (
-                      <td className="px-4 py-3">
-                        {p.status === 'Pending' && (
-                          <button onClick={() => paidMutation.mutate(p._id)} disabled={paidMutation.isPending}
-                            className="flex items-center gap-1 text-xs text-green-600 hover:text-green-700 font-medium disabled:opacity-50">
-                            <CheckCircle className="w-4 h-4" /> Mark Paid
-                          </button>
-                        )}
-                      </td>
-                    )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+      {/* Confirm Pay Modal */}
+      {confirmPay && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <Card className="w-full max-w-sm mx-4">
+            <CardContent className="p-6 space-y-4">
+              <h2 className="text-lg font-semibold">Confirm Payment</h2>
+              <p className="text-sm text-muted-foreground">Mark <strong>${confirmPay.amount}</strong> for <strong>{confirmPay.month}</strong> as paid?</p>
+              <div className="flex gap-2"><Button variant="outline" className="flex-1" onClick={() => setConfirmPay(null)}>Cancel</Button><Button className="flex-1 bg-green-500 hover:bg-green-600 text-white" onClick={() => markPaidMutation.mutate(confirmPay._id)} disabled={markPaidMutation.isPending}>{markPaidMutation.isPending ? 'Processing...' : 'Confirm Paid'}</Button></div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
-      {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Record Payment</h2>
-              <button onClick={() => setShowModal(false)}><X className="w-5 h-5 text-gray-500" /></button>
-            </div>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Resident</label>
-                <select value={form.residentId} onChange={(e) => setForm({ ...form, residentId: e.target.value })}
-                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                  <option value="">Select resident...</option>
-                  {residents.map((r) => <option key={r._id} value={r._id}>{r.name} {r.unit ? `(Unit ${r.unit})` : ''}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Month (e.g. 2026-04)</label>
-                <input type="month" value={form.month} onChange={(e) => setForm({ ...form, month: e.target.value })}
-                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Amount (₹)</label>
-                <input type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })}
-                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
-                <input type="text" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="e.g. Maintenance fee"
-                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-              </div>
-            </div>
-            <div className="flex gap-3 justify-end">
-              <button onClick={() => setShowModal(false)} className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400">Cancel</button>
-              <button onClick={() => recordMutation.mutate()} disabled={recordMutation.isPending || !form.residentId || !form.amount || !form.month || !form.description}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50">
-                {recordMutation.isPending ? 'Recording...' : 'Record'}
-              </button>
-            </div>
-          </div>
+      {/* Payment List */}
+      {isLoading ? (
+        <div className="space-y-2">{[...Array(4)].map((_, i) => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}</div>
+      ) : filtered.length === 0 ? (
+        <Card><CardContent className="p-12 text-center"><CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" /><p className="font-medium">All Paid ✓</p><p className="text-sm text-muted-foreground mt-1">No payments matching the filter.</p></CardContent></Card>
+      ) : (
+        <div className="space-y-2">
+          {filtered.map(p => (
+            <Card key={p._id} className="hover:shadow-sm transition-shadow">
+              <CardContent className="p-4 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${p.status === 'Paid' ? 'bg-green-100 dark:bg-green-900' : 'bg-yellow-100 dark:bg-yellow-900'}`}>
+                    {p.status === 'Paid' ? <CheckCircle className="w-5 h-5 text-green-600" /> : <AlertCircle className="w-5 h-5 text-yellow-600" />}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-medium truncate">{p.description}</p>
+                    <p className="text-xs text-muted-foreground">{p.month} · {isAdmin ? `${p.resident?.name} (${p.resident?.unit ?? 'No unit'})` : ''}</p>
+                    {p.paidAt && <p className="text-xs text-green-600">Paid on {new Date(p.paidAt).toLocaleDateString()}</p>}
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 flex-shrink-0">
+                  <div className="text-right">
+                    <p className="font-bold">${p.amount.toLocaleString()}</p>
+                    <Badge className={`text-xs ${statusColor[p.status]}`}>{p.status}</Badge>
+                  </div>
+                  {p.status === 'Pending' && !isAdmin && (
+                    <Button className="text-xs bg-green-500 hover:bg-green-600 text-white" onClick={() => setConfirmPay(p)}>Pay Now</Button>
+                  )}
+                  {p.status === 'Pending' && isAdmin && (
+                    <Button variant="outline" className="text-xs" onClick={() => markPaidMutation.mutate(p._id)} disabled={markPaidMutation.isPending}>Mark Paid</Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
     </div>

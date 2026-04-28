@@ -22,7 +22,7 @@ export function VisitorRecentList() {
               <div className="flex-1">
                 <div className="font-medium">{v.name}</div>
                 <div className="text-xs text-muted-foreground">
-                  Checked out • {new Date(v.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  Checked out • {new Date(v.checkInTime ?? '').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </div>
               </div>
               <div className="text-success text-xs font-medium">Completed</div>
