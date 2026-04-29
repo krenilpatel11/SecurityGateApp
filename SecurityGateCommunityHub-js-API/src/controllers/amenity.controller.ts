@@ -44,8 +44,9 @@ export const bookAmenity = async (req: Request, res: Response) => {
 
 export const getBookings = async (req: Request, res: Response) => {
   try {
-    const user = req.user as { id: string; role: string };
-    const filter = user.role === UserRole.RESIDENT ? { bookedBy: user.id } : {};
+    const user = req.user as { id: string; role: string; activeRole?: string };
+    const effectiveRole = user.activeRole ?? user.role;
+    const filter = effectiveRole === UserRole.RESIDENT ? { bookedBy: user.id } : {};
     const bookings = await AmenityBooking.find(filter)
       .populate('amenity', 'name description')
       .populate('bookedBy', 'name unit email')

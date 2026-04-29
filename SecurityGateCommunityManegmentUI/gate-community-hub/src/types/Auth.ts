@@ -1,12 +1,13 @@
 export interface JwtPayload {
   id: string;
   email: string;
-  role: "resident" | "staff" | "admin" | "security";
+  role: "resident" | "staff" | "admin" | "security" | "superuser";
+  activeRole?: "resident" | "staff" | "admin" | "security" | "superuser"; // SUPERUSER impersonation
   exp: number;
   iat: number;
   name?: string;
-  avatar?: string; 
- residentId?: string | number;
+  avatar?: string;
+  residentId?: string | number;
 }
 
 export interface AuthUser {
@@ -14,15 +15,16 @@ export interface AuthUser {
   user: JwtPayload;
 }
 
-export interface User{
- name: string;
+export interface User {
+  name: string;
   email: string;
   password?: string;
   googleId?: string;
   createdAt: Date;
-  avatar?: string; 
+  avatar?: string;
   role: UserRole;
-  unit?: string; // Flat/Unit info
+  activeRole?: UserRole;
+  unit?: string;
   phone?: string;
   residentSince?: Date;
   updatedAt: Date;
@@ -33,7 +35,8 @@ export const UserRole = {
   RESIDENT: 'resident',
   SECURITY: 'security',
   ADMIN: 'admin',
-  STAFF: 'staff'
+  STAFF: 'staff',
+  SUPERUSER: 'superuser',
 } as const;
 
 export type UserRole = typeof UserRole[keyof typeof UserRole];

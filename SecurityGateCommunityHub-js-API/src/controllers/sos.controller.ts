@@ -20,8 +20,9 @@ export const triggerSOS = async (req: Request, res: Response) => {
 
 export const getSOSAlerts = async (req: Request, res: Response) => {
   try {
-    const user = req.user as { id: string; role: string };
-    const filter = user.role === UserRole.RESIDENT ? { raisedBy: user.id } : {};
+    const user = req.user as { id: string; role: string; activeRole?: string };
+    const effectiveRole = user.activeRole ?? user.role;
+    const filter = effectiveRole === UserRole.RESIDENT ? { raisedBy: user.id } : {};
     const alerts = await SOS.find(filter)
       .populate('raisedBy', 'name unit phone')
       .populate('resolvedBy', 'name')

@@ -16,6 +16,7 @@ export const authenticateJWT = (req: Request, res: Response, next: NextFunction)
       id: decoded.id,
       email: decoded.email,
       role: decoded.role,
+      activeRole: decoded.activeRole,
       name: decoded.name,
       avatar: decoded.avatar,
     };

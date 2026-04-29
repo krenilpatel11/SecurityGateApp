@@ -45,7 +45,16 @@ async function seed() {
   const hash = (pw: string) => bcrypt.hash(pw, 10);
 
   // ── Users ──────────────────────────────────────────────────────────────────
-  const [admin, resident1, resident2, guard, staff] = await User.insertMany([
+  const [, admin, resident1, resident2, guard, staff] = await User.insertMany([
+    {
+      name: 'Super User',
+      email: 'super@gateapp.com',
+      password: await hash('Super@123'),
+      role: UserRole.SUPERUSER,
+      unit: 'HQ',
+      phone: '+1-555-0000',
+      residentSince: new Date('2019-01-01'),
+    },
     {
       name: 'Admin User',
       email: 'admin@gateapp.com',
@@ -207,6 +216,7 @@ async function seed() {
 
   console.log('\n✅ All seed data inserted successfully!');
   console.log('\n📋 Test Credentials:');
+  console.log('  Superuser: super@gateapp.com  / Super@123');
   console.log('  Admin:    admin@gateapp.com   / Admin@123');
   console.log('  Resident: alice@gateapp.com   / Alice@123');
   console.log('  Resident: bob@gateapp.com     / Bob@123');

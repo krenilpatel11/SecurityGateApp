@@ -1,24 +1,35 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getAllUsers, updateUserRole } from '@/api/admin';
+import { getAllUsers, updateUserRole, getAdminStats } from '@/api/admin';
 import type { UserProfile } from '@/api/profile';
-import { Users, ShieldCheck, Search, X } from 'lucide-react';
+import { Users, ShieldCheck, Search, X, Crown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useAuth } from '@/context/AuthContext';
 
-const ROLES = ['resident', 'security', 'admin', 'staff'];
+const ROLES = ['resident', 'security', 'admin', 'staff', 'superuser'];
 
 const roleBadgeColor: Record<string, string> = {
-  admin: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300',
-  resident: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
-  security: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
-  staff: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300',
+  superuser: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300',
+  admin:     'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
+  resident:  'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300',
+  security:  'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
+  staff:     'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300',
 };
+
+interface AdminStats {
+  totalUsers: number;
+  residents: number;
+  security: number;
+  staff: number;
+  superusers: number;
+}
 
 export default function AdminPage() {
   const queryClient = useQueryClient();
+  const { isSuperuser } = useAuth();
   const [search, setSearch] = useState('');
   const [confirmChange, setConfirmChange] = useState<{ user: UserProfile; newRole: string } | null>(null);
 
@@ -27,9 +38,19 @@ export default function AdminPage() {
     queryFn: () => getAllUsers(),
   });
 
+  const { data: stats } = useQuery<AdminStats>({
+    queryKey: ['admin-stats'],
+    queryFn: () => getAdminStats(),
+    enabled: isSuperuser,
+  });
+
   const roleMutation = useMutation({
     mutationFn: ({ id, role }: { id: string; role: string }) => updateUserRole(id, role),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-users'] }); setConfirmChange(null); },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
+      setConfirmChange(null);
+    },
   });
 
   const filtered = users.filter(u =>
@@ -37,16 +58,46 @@ export default function AdminPage() {
     u.email.toLowerCase().includes(search.toLowerCase())
   );
 
-  const counts = ROLES.reduce((acc, r) => ({ ...acc, [r]: users.filter(u => u.role === r).length }), {} as Record<string, number>);
+  const counts = ROLES.reduce(
+    (acc, r) => ({ ...acc, [r]: users.filter(u => u.role === r).length }),
+    {} as Record<string, number>
+  );
+
+  const assignableRoles = isSuperuser ? ROLES : ROLES.filter(r => r !== 'superuser');
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold flex items-center gap-2"><ShieldCheck className="w-6 h-6 text-purple-600" /> Admin Panel</h1>
+      <h1 className="text-2xl font-bold flex items-center gap-2">
+        <ShieldCheck className="w-6 h-6 text-purple-600" /> Admin Panel
+        {isSuperuser && (
+          <span className="ml-2 flex items-center gap-1 text-sm font-normal bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-full">
+            <Crown className="w-3.5 h-3.5" /> Superuser Mode
+          </span>
+        )}
+      </h1>
 
-      {/* Stats */}
+      {/* Superuser Stats Banner */}
+      {isSuperuser && stats && (
+        <Card className="border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-950/20">
+          <CardContent className="p-4">
+            <p className="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wider mb-3">
+              Platform Overview
+            </p>
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 text-center">
+              <div><p className="text-2xl font-bold">{stats.totalUsers}</p><p className="text-xs text-muted-foreground">Total Users</p></div>
+              <div><p className="text-2xl font-bold text-orange-600">{stats.residents}</p><p className="text-xs text-muted-foreground">Residents</p></div>
+              <div><p className="text-2xl font-bold text-green-600">{stats.security}</p><p className="text-xs text-muted-foreground">Security</p></div>
+              <div><p className="text-2xl font-bold text-yellow-600">{stats.staff}</p><p className="text-xs text-muted-foreground">Staff</p></div>
+              <div><p className="text-2xl font-bold text-purple-600">{stats.superusers}</p><p className="text-xs text-muted-foreground">Superusers</p></div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Role Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {ROLES.map(r => (
-          <Card key={r} className={`border-none ${roleBadgeColor[r].replace('text-', 'bg-').split(' ')[0].replace('bg-', 'bg-').replace('100', '50').replace('900', '950/30')}`}>
+        {['resident', 'security', 'admin', 'staff'].map(r => (
+          <Card key={r} className="border-none">
             <CardContent className="p-4 text-center">
               <p className="text-2xl font-bold">{counts[r] ?? 0}</p>
               <p className="text-xs capitalize text-muted-foreground mt-1">{r}s</p>
@@ -58,7 +109,12 @@ export default function AdminPage() {
       {/* Search */}
       <div className="relative">
         <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground" />
-        <input className="w-full border rounded-lg pl-9 pr-3 py-2 bg-background text-sm" placeholder="Search by name or email..." value={search} onChange={e => setSearch(e.target.value)} />
+        <input
+          className="w-full border rounded-lg pl-9 pr-3 py-2 bg-background text-sm"
+          placeholder="Search by name or email..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
       </div>
 
       {/* Confirm Role Change Modal */}
@@ -66,11 +122,26 @@ export default function AdminPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <Card className="w-full max-w-sm mx-4">
             <CardContent className="p-6 space-y-4">
-              <div className="flex items-center justify-between"><h2 className="text-lg font-semibold">Confirm Role Change</h2><button onClick={() => setConfirmChange(null)}><X className="w-5 h-5" /></button></div>
-              <p className="text-sm text-muted-foreground">Change <strong>{confirmChange.user.name}</strong>'s role to <strong className="capitalize">{confirmChange.newRole}</strong>?</p>
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Confirm Role Change</h2>
+                <button onClick={() => setConfirmChange(null)}><X className="w-5 h-5" /></button>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Change <strong>{confirmChange.user.name}</strong>'s role to{' '}
+                <strong className="capitalize">{confirmChange.newRole}</strong>?
+                {confirmChange.newRole === 'superuser' && (
+                  <span className="block mt-1 text-purple-600 dark:text-purple-400 font-medium">
+                    ⚠️ This grants full platform access.
+                  </span>
+                )}
+              </p>
               <div className="flex gap-2">
                 <Button variant="outline" className="flex-1" onClick={() => setConfirmChange(null)}>Cancel</Button>
-                <Button className="flex-1" onClick={() => roleMutation.mutate({ id: confirmChange.user._id, role: confirmChange.newRole })} disabled={roleMutation.isPending}>
+                <Button
+                  className="flex-1"
+                  onClick={() => roleMutation.mutate({ id: confirmChange.user._id, role: confirmChange.newRole })}
+                  disabled={roleMutation.isPending}
+                >
                   {roleMutation.isPending ? 'Updating...' : 'Confirm'}
                 </Button>
               </div>
@@ -83,17 +154,35 @@ export default function AdminPage() {
       {isLoading ? (
         <div className="space-y-2">{[...Array(5)].map((_, i) => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}</div>
       ) : filtered.length === 0 ? (
-        <Card><CardContent className="p-12 text-center"><Users className="w-12 h-12 text-muted-foreground mx-auto mb-3" /><p className="text-muted-foreground">No users found.</p></CardContent></Card>
+        <Card>
+          <CardContent className="p-12 text-center">
+            <Users className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+            <p className="text-muted-foreground">No users found.</p>
+          </CardContent>
+        </Card>
       ) : (
         <Card>
           <CardContent className="p-0 divide-y">
             {filtered.map(u => (
               <div key={u._id} className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary flex-shrink-0">{u.name[0]}</div>
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary flex-shrink-0 relative">
+                  {u.name[0]}
+                  {u.role === 'superuser' && (
+                    <span className="absolute -bottom-1 -right-1 bg-purple-500 rounded-full p-0.5">
+                      <Crown className="w-2.5 h-2.5 text-white" />
+                    </span>
+                  )}
+                </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium truncate">{u.name}</p>
-                  <p className="text-xs text-muted-foreground truncate">{u.email}{u.unit ? ` · Unit ${u.unit}` : ''}</p>
-                  {u.residentSince && <p className="text-xs text-muted-foreground">Since {new Date(u.residentSince).toLocaleDateString()}</p>}
+                  <p className="text-xs text-muted-foreground truncate">
+                    {u.email}{u.unit ? ` · Unit ${u.unit}` : ''}
+                  </p>
+                  {u.residentSince && (
+                    <p className="text-xs text-muted-foreground">
+                      Since {new Date(u.residentSince).toLocaleDateString()}
+                    </p>
+                  )}
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <Badge className={`text-xs ${roleBadgeColor[u.role] ?? ''}`}>{u.role}</Badge>
@@ -102,7 +191,9 @@ export default function AdminPage() {
                     value={u.role}
                     onChange={e => setConfirmChange({ user: u, newRole: e.target.value })}
                   >
-                    {ROLES.map(r => <option key={r} value={r} className="capitalize">{r}</option>)}
+                    {assignableRoles.map(r => (
+                      <option key={r} value={r} className="capitalize">{r}</option>
+                    ))}
                   </select>
                 </div>
               </div>

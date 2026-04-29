@@ -117,3 +117,31 @@ Format: `## [vX.Y.Z] — YYYY-MM-DD`
 - OpenCode configuration: `opencode.json` with 4 custom agents
 - Agent definitions: planner, ui-builder, api-builder, qa-reviewer
 - Project documentation: AGENTS.md, CHANGELOG.md, SPRINT_LOG.md, QA_REPORT.md, API_DOCS.md
+
+## [v0.4.0] — 2026-04-30 — Sprint 4: SUPERUSER Role + Cycling Improvement
+
+### Added
+- **SUPERUSER role** (`UserRole.SUPERUSER`) — new top-level role that bypasses all `authorizeRoles` checks
+- **Role impersonation** — SUPERUSER can act as any role (admin/security/resident/staff) via `POST /api/admin/switch-role`; issues a new JWT with `activeRole` set
+- **`GET /api/admin/stats`** — platform-wide user count breakdown (total, residents, security, staff, superusers)
+- **`RoleSwitcher` component** — purple pill in the NavBar, only visible to superusers; dropdown to switch active role with live token refresh
+- **`UserMenu` role badge** — shows current role with colour-coded badge; superuser shows crown icon + "Acting as X" when impersonating
+- **`WelcomeBanner` superuser greeting** — crown icon, role-specific greeting, impersonation hint
+- **AdminPage superuser panel** — platform overview stats banner, superuser-only role assignment (can promote to superuser), crown icon on superuser rows
+- **`activeRole` in JWT payload** — both `generateToken` and `generateRefreshToken` now embed `activeRole`
+- **Global Express user type** — `src/types/express.d.ts` declares `Express.User` with `activeRole?`
+- **Seed superuser** — `super@gateapp.com / Super@123` seeded as first user
+
+### Changed
+- `role.middleware.ts` — SUPERUSER short-circuits all role checks; other roles use `activeRole ?? role` as effective role
+- `auth.middleware.ts` — passes `activeRole` through from JWT to `req.user`
+- `admin.controller.ts` — added `switchActiveRole` + `getAdminStats` exports
+- `admin.routes.ts` — added `POST /switch-role`, `GET /stats`; both admin + superuser can list/update users
+- `amenity/complaint/payment/sos` controllers — use `effectiveRole` instead of raw `user.role` for filter scoping
+- `AuthContext` — added `isSuperuser`, `effectiveRole`, `switchRole`, `isSwitchingRole` to context
+- `types/Auth.ts` — `JwtPayload.role` and `UserRole` now include `"superuser"`
+- `api/admin.ts` — added `getAdminStats()`
+
+### Build
+- `npx tsc --noEmit` → 0 errors (API + UI)
+- `npm run build` → SUCCESS (UI: 4.2MB, API: compiled to dist/)

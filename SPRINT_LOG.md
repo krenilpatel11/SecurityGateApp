@@ -208,3 +208,53 @@ Ready to begin Sprint 1 (MVP core auth + gate access).
 - [x] API `npx tsc --noEmit` → 0 errors
 - [x] UI `npm run lint` → 0 errors
 - [x] UI `npm run build` → SUCCESS (4.2MB, 10.08s)
+
+---
+
+## Sprint 4 — v0.4.0 — 2026-04-30
+**Goal**: Add SUPERUSER role with full platform access and live role impersonation
+**Duration**: 1 day
+
+### User Stories
+- [x] As a superuser, I can access every page and endpoint without role restrictions (SP: 3)
+- [x] As a superuser, I can switch my active role to see the app as any other role (SP: 5)
+- [x] As a superuser, I can promote any user to superuser from the Admin panel (SP: 2)
+- [x] As an admin, I can see platform-wide user stats on the Admin page (SP: 2)
+
+### Acceptance Criteria
+- [x] `UserRole.SUPERUSER` exists in both API model and UI types
+- [x] `authorizeRoles` middleware short-circuits for SUPERUSER
+- [x] `POST /api/admin/switch-role` issues a new JWT with `activeRole`
+- [x] `RoleSwitcher` component visible only to superusers in NavBar
+- [x] UserMenu shows role badge + crown icon for superuser
+- [x] AdminPage shows platform stats banner for superuser
+- [x] Seed script creates `super@gateapp.com / Super@123`
+- [x] TypeScript 0 errors, build SUCCESS
+
+### Files Changed
+**API:**
+- `src/models/user.model.ts` — added SUPERUSER + activeRole field
+- `src/middlewares/role.middleware.ts` — SUPERUSER bypass + effectiveRole
+- `src/middlewares/auth.middleware.ts` — pass activeRole through JWT
+- `src/utils/jwt.ts` — activeRole in payload
+- `src/controllers/admin.controller.ts` — switchActiveRole + getAdminStats
+- `src/routes/admin.routes.ts` — new endpoints
+- `src/controllers/amenity|complaint|payment|sos.controller.ts` — effectiveRole
+- `src/scripts/seedAll.ts` — superuser seed account
+- `src/types/express.d.ts` — global Express.User type
+
+**UI:**
+- `src/types/Auth.ts` — superuser role added
+- `src/context/AuthContext.tsx` — isSuperuser, effectiveRole, switchRole
+- `src/components/ui/layout/RoleSwitcher.tsx` — NEW component
+- `src/components/ui/layout/NavBar.tsx` — RoleSwitcher added
+- `src/components/ui/layout/UserMenu.tsx` — role badge + crown
+- `src/components/ui/Dashboard/WelcomeBanner.tsx` — superuser greeting
+- `src/page/Admin/AdminPage.tsx` — stats panel + superuser role assignment
+- `src/api/admin.ts` — getAdminStats()
+
+### Definition of Done ✅
+- TypeScript compiles with 0 errors ✅
+- Vite build succeeds ✅
+- API compiled to dist/ ✅
+- CHANGELOG updated ✅

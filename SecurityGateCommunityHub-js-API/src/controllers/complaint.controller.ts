@@ -18,8 +18,9 @@ export const createComplaint = async (req: Request, res: Response) => {
 
 export const getComplaints = async (req: Request, res: Response) => {
   try {
-    const user = req.user as { id: string; role: string };
-    const filter = user.role === UserRole.RESIDENT ? { raisedBy: user.id } : {};
+    const user = req.user as { id: string; role: string; activeRole?: string };
+    const effectiveRole = user.activeRole ?? user.role;
+    const filter = effectiveRole === UserRole.RESIDENT ? { raisedBy: user.id } : {};
     const complaints = await Complaint.find(filter)
       .populate('raisedBy', 'name unit email')
       .populate('assignedTo', 'name email')

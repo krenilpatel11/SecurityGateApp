@@ -4,10 +4,11 @@ import { UserRole } from '../models/user.model';
 
 export const getPayments = async (req: Request, res: Response) => {
   try {
-    const user = req.user as { id: string; role: string };
+    const user = req.user as { id: string; role: string; activeRole?: string };
+    const effectiveRole = user.activeRole ?? user.role;
     const { status } = req.query as { status?: string };
     const filter: Record<string, unknown> =
-      user.role === UserRole.RESIDENT ? { resident: user.id } : {};
+      effectiveRole === UserRole.RESIDENT ? { resident: user.id } : {};
     if (status) filter.status = status;
     const payments = await Payment.find(filter)
       .populate('resident', 'name unit email')

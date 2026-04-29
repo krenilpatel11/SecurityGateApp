@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { type JwtPayload } from "@/types/Auth";
 import { decodeToken, isTokenValid } from "@/utils/Auth";
+import api from "@/utils/api";
 
 interface AuthContextType {
   user: JwtPayload | null;
@@ -8,6 +9,11 @@ interface AuthContextType {
   login: (token: string, refreshToken?: string) => void;
   logout: () => void;
   isAuthenticated: boolean;
+  // SUPERUSER role switching
+  isSuperuser: boolean;
+  effectiveRole: string | null;
+  switchRole: (role: string | null) => Promise<void>;
+  isSwitchingRole: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -18,6 +24,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const t = localStorage.getItem("token");
     return t && isTokenValid(t) ? decodeToken(t) : null;
   });
+  const [isSwitchingRole, setIsSwitchingRole] = useState(false);
 
   useEffect(() => {
     if (token && isTokenValid(token)) {
@@ -45,8 +52,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     window.location.href = "/login";
   };
 
+  // SUPERUSER: switch active role (null = reset to superuser view)
+  const switchRole = useCallback(async (role: string | null) => {
+    if (!user || user.role !== "superuser") return;
+    setIsSwitchingRole(true);
+    try {
+      const res = await api.post<{ success: boolean; data: { token: string; refreshToken: string } }>(
+        "/admin/switch-role",
+        { activeRole: role }
+      );
+      if (res.data.success) {
+        login(res.data.data.token, res.data.data.refreshToken);
+      }
+    } catch (err) {
+      console.error("Role switch failed", err);
+    } finally {
+      setIsSwitchingRole(false);
+    }
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const isSuperuser = user?.role === "superuser";
+  const effectiveRole = isSuperuser ? (user?.activeRole ?? "superuser") : (user?.role ?? null);
+
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!user }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        login,
+        logout,
+        isAuthenticated: !!user,
+        isSuperuser,
+        effectiveRole,
+        switchRole,
+        isSwitchingRole,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

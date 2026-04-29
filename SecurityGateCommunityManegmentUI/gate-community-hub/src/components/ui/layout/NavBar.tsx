@@ -1,6 +1,7 @@
 import { Bell, Menu } from "lucide-react";
 import { UserMenu } from "./UserMenu";
 import { ThemeToggle } from "./ThemeToggle";
+import { RoleSwitcher } from "./RoleSwitcher";
 import logoSvg from "@/assets/logo/neighborlyHub-Logo.png";
 import { Sheet, SheetContent, SheetTrigger } from "../sheet";
 import { navLinks } from "./SideNav";
@@ -57,6 +58,7 @@ export function NavBar() {
             <span className="absolute top-1 right-1 w-2 h-2 bg-danger rounded-full"></span>
           </button>
         )}
+        <RoleSwitcher />
         <ThemeToggle />
         {/* Show Login button if logged out, else UserMenu */}
         {isAuthenticated ? (

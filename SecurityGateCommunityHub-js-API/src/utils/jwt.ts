@@ -5,6 +5,7 @@ export interface JwtPayload {
   id: string;
   email: string;
   role: string;
+  activeRole?: string; // SUPERUSER impersonated role
   name: string;
   avatar?: string;
 }
@@ -14,6 +15,7 @@ export const generateToken = (user: IUser): string => {
     id: user.id.toString(),
     email: user.email,
     role: user.role,
+    activeRole: user.activeRole,
     name: user.name,
     avatar: user.avatar,
   };
@@ -25,6 +27,7 @@ export const generateRefreshToken = (user: IUser): string => {
     id: user.id.toString(),
     email: user.email,
     role: user.role,
+    activeRole: user.activeRole,
     name: user.name,
     avatar: user.avatar,
   };
