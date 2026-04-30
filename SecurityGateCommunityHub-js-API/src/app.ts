@@ -16,6 +16,9 @@ import amenityRoutes from './routes/amenity.routes';
 import eventRoutes from './routes/event.routes';
 import pollRoutes from './routes/poll.routes';
 import notificationRoutes from './routes/notification.routes';
+import staffRoutes from './routes/staff.routes';
+import gateRoutes from './routes/gate.routes';
+import communityFeedRoutes from './routes/communityFeed.routes';
 
 const app = express();
 
@@ -72,6 +75,9 @@ app.use('/api/amenities', amenityRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/polls', pollRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/staff', staffRoutes);
+app.use('/api/gate', gateRoutes);
+app.use('/api/feed', communityFeedRoutes);
 
 // Health check
 app.get('/health', (_req: Request, res: Response) => {

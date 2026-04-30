@@ -18,7 +18,7 @@ export function VisitorTable({ visitors, onRowClick }: Props) {
   const filtered = visitors.filter(
     v =>
       (category === "All" || v.category === category) &&
-      v.name.toLowerCase().includes(search.toLowerCase())
+      (v.name ?? "").toLowerCase().includes(search.toLowerCase())
   );
 
   return (

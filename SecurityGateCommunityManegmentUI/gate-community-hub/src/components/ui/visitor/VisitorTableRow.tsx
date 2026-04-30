@@ -32,14 +32,14 @@ export function VisitorTableRow({ visitor, onClick }: Props) {
         </div>
       </td>
       <td className="py-2 px-2">
-        <Badge className={categoryColors[visitor.category]}>{visitor.category}</Badge>
+        <Badge className={categoryColors[visitor.category ?? 'Guest']}>{visitor.category}</Badge>
       </td>
       <td className="py-2 px-2">
         <div>{new Date(visitor.checkInTime ?? '').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
         <div className="text-xs text-muted-foreground">{visitor.entryPoint}</div>
       </td>
       <td className="py-2 px-2">
-        <Badge className={statusColors[visitor.status]}>{visitor.status}</Badge>
+        <Badge className={statusColors[visitor.status ?? 'Pending']}>{visitor.status}</Badge>
       </td>
       <td className="py-2 px-2">
         <button className="p-2 rounded hover:bg-muted" aria-label="View Details">

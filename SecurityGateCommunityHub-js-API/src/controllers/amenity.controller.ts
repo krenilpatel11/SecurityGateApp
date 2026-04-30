@@ -30,6 +30,16 @@ export const bookAmenity = async (req: Request, res: Response) => {
     if (!amenityId || !date || !timeSlot) {
       return res.status(400).json({ success: false, data: null, message: 'amenityId, date, and timeSlot are required' });
     }
+    // Time-slot conflict check
+    const conflict = await AmenityBooking.findOne({
+      amenity: amenityId,
+      date: new Date(date),
+      timeSlot,
+      status: { $nin: [BookingStatus.REJECTED] },
+    });
+    if (conflict) {
+      return res.status(409).json({ success: false, data: null, message: `Time slot "${timeSlot}" is already booked for this date` });
+    }
     const bookedBy = (req.user as { id: string }).id;
     const booking = await AmenityBooking.create({ amenity: amenityId, bookedBy, date: new Date(date), timeSlot });
     const populated = await booking.populate([

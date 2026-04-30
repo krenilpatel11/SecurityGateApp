@@ -7,63 +7,59 @@ interface ApiResponse<T> {
   message: string;
 }
 
-// Get current resident's own visitors (GET /api/visitor/my)
 export async function getMyVisitors(): Promise<Visitor[]> {
   const res = await api.get<ApiResponse<Visitor[]>>("/visitor/my");
   return res.data.data ?? (res.data as unknown as Visitor[]);
 }
 
-// Invite a visitor (POST /api/visitor/invite)
 export async function inviteVisitor(data: {
-  name: string;
-  purpose: string;
-  category?: Visitor["category"];
-  visitDate?: string;
-  visitTime?: string;
-  unit?: string;
-  entryPoint?: string;
-}): Promise<Visitor> {
-  const res = await api.post<ApiResponse<Visitor>>("/visitor/invite", data);
+  name: string; purpose: string; category?: Visitor["category"];
+  visitDate?: string; visitTime?: string; unit?: string;
+  entryPoint?: string; phone?: string; vehicleNumber?: string;
+}): Promise<Visitor & { otpForDev?: string }> {
+  const res = await api.post<ApiResponse<Visitor & { otpForDev?: string }>>("/visitor/invite", data);
   return res.data.data ?? (res.data as unknown as Visitor);
 }
 
-// Get upcoming (pre-approved) visitors (GET /api/visitor/upcoming)
+export async function verifyVisitorOTP(id: string, otp: string): Promise<Visitor> {
+  const res = await api.post<ApiResponse<Visitor>>(`/visitor/${id}/verify-otp`, { otp });
+  return res.data.data;
+}
+
+export async function getGatePass(id: string): Promise<Visitor> {
+  const res = await api.get<ApiResponse<Visitor>>(`/visitor/gate-pass/${id}`);
+  return res.data.data;
+}
+
 export async function getUpcomingVisitors(): Promise<Visitor[]> {
   const res = await api.get<ApiResponse<Visitor[]>>("/visitor/upcoming");
   return res.data.data ?? (res.data as unknown as Visitor[]);
 }
 
-// Get visitor history (GET /api/visitor/history)
 export async function getVisitorHistory(): Promise<Visitor[]> {
   const res = await api.get<ApiResponse<Visitor[]>>("/visitor/history");
   return res.data.data ?? (res.data as unknown as Visitor[]);
 }
 
-// Get all visitors (for Security/Admin) (GET /api/visitor?category=...&status=...)
-export async function getAllVisitors(params?: {
-  category?: string;
-  status?: string;
-  date?: string;
-}): Promise<Visitor[]> {
+export async function getAllVisitors(params?: { category?: string; status?: string; date?: string }): Promise<Visitor[]> {
   const res = await api.get<ApiResponse<Visitor[]>>("/visitor", { params });
   return res.data.data ?? (res.data as unknown as Visitor[]);
 }
 
-// Update visitor status (PATCH /api/visitor/:id/status)
-export async function updateVisitorStatus(id: string, status: string): Promise<Visitor> {
-  const res = await api.patch<ApiResponse<Visitor>>(`/visitor/${id}/status`, { status });
+export async function updateVisitorStatus(id: string, status: string, photoUrl?: string): Promise<Visitor> {
+  const res = await api.patch<ApiResponse<Visitor>>(`/visitor/${id}/status`, { status, photoUrl });
   return res.data.data;
 }
 
-// Log walk-in visitor (POST /api/visitor/walkin)
+export async function captureVisitorPhoto(id: string, photoUrl: string): Promise<Visitor> {
+  const res = await api.patch<ApiResponse<Visitor>>(`/visitor/${id}/photo`, { photoUrl });
+  return res.data.data;
+}
+
 export async function logWalkIn(data: {
-  name: string;
-  phone?: string;
-  purpose: string;
-  unit?: string;
-  category?: string;
+  name: string; phone?: string; purpose: string; unit?: string;
+  category?: string; vehicleNumber?: string; photoUrl?: string;
 }): Promise<Visitor> {
   const res = await api.post<ApiResponse<Visitor>>("/visitor/walkin", data);
   return res.data.data;
 }
-

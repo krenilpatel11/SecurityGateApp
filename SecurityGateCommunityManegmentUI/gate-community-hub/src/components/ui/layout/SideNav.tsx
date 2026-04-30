@@ -1,20 +1,14 @@
 import { useState } from "react";
 import {
-  MdDashboard,
-  MdOutlineDashboard,
-  MdCampaign,
-  MdMailOutline,
-  MdPayments,
-  MdOutlinePayments,
-  MdPerson,
-  MdPersonOutline,
-  MdChevronLeft,
-  MdPeopleOutline,
-  MdPeople,
-  MdLocalShipping,
-  MdOutlineLocalShipping,
+  MdDashboard, MdOutlineDashboard, MdCampaign, MdMailOutline,
+  MdPayments, MdOutlinePayments, MdPerson, MdPersonOutline,
+  MdChevronLeft, MdPeopleOutline, MdPeople,
+  MdLocalShipping, MdOutlineLocalShipping,
 } from "react-icons/md";
-import { ShieldCheck, Users, MessageSquareWarning, AlertTriangle, Building2, CalendarDays, Bell } from "lucide-react";
+import {
+  ShieldCheck, Users, MessageSquareWarning, AlertTriangle,
+  Building2, CalendarDays, Bell, ShoppingBag, ClipboardList,
+} from "lucide-react";
 import { SideNavItem } from "./SideNavItem";
 import { Card } from "../card";
 import { cn } from "@/lib/utils";
@@ -22,19 +16,21 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../too
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const navLinks: { to: string; icon: React.ReactNode; iconActive: React.ReactNode; label: string }[] = [
-  { to: "/dashboard", icon: <MdOutlineDashboard />, iconActive: <MdDashboard />, label: "Dashboard" },
-  { to: "/visitor", icon: <MdPeopleOutline />, iconActive: <MdPeople />, label: "Visitors" },
-  { to: "/delivery", icon: <MdOutlineLocalShipping />, iconActive: <MdLocalShipping />, label: "Deliveries" },
-  { to: "/announcements", icon: <MdMailOutline />, iconActive: <MdCampaign />, label: "Announcements" },
-  { to: "/community", icon: <CalendarDays className="w-5 h-5" />, iconActive: <CalendarDays className="w-5 h-5" />, label: "Community" },
-  { to: "/payments", icon: <MdOutlinePayments />, iconActive: <MdPayments />, label: "Payments" },
-  { to: "/amenities", icon: <Building2 className="w-5 h-5" />, iconActive: <Building2 className="w-5 h-5" />, label: "Amenities" },
-  { to: "/complaints", icon: <MessageSquareWarning className="w-5 h-5" />, iconActive: <MessageSquareWarning className="w-5 h-5" />, label: "Complaints" },
-  { to: "/sos", icon: <AlertTriangle className="w-5 h-5 text-red-500" />, iconActive: <AlertTriangle className="w-5 h-5 text-red-600" />, label: "SOS" },
-  { to: "/staff", icon: <Users className="w-5 h-5" />, iconActive: <Users className="w-5 h-5" />, label: "Staff" },
-  { to: "/admin", icon: <ShieldCheck className="w-5 h-5" />, iconActive: <ShieldCheck className="w-5 h-5" />, label: "Admin" },
-  { to: "/notifications", icon: <Bell className="w-5 h-5" />, iconActive: <Bell className="w-5 h-5" />, label: "Notifications" },
-  { to: "/profile", icon: <MdPersonOutline />, iconActive: <MdPerson />, label: "Profile" },
+  { to: "/dashboard",    icon: <MdOutlineDashboard />,        iconActive: <MdDashboard />,           label: "Dashboard" },
+  { to: "/gate",         icon: <ShieldCheck className="w-5 h-5" />, iconActive: <ShieldCheck className="w-5 h-5 text-green-600" />, label: "Gate Dashboard" },
+  { to: "/visitor",      icon: <MdPeopleOutline />,           iconActive: <MdPeople />,              label: "Visitors" },
+  { to: "/delivery",     icon: <MdOutlineLocalShipping />,    iconActive: <MdLocalShipping />,       label: "Deliveries" },
+  { to: "/staff",        icon: <Users className="w-5 h-5" />, iconActive: <Users className="w-5 h-5 text-purple-600" />, label: "Staff" },
+  { to: "/feed",         icon: <ShoppingBag className="w-5 h-5" />, iconActive: <ShoppingBag className="w-5 h-5 text-pink-500" />, label: "Community Feed" },
+  { to: "/announcements",icon: <MdMailOutline />,             iconActive: <MdCampaign />,            label: "Announcements" },
+  { to: "/community",    icon: <CalendarDays className="w-5 h-5" />, iconActive: <CalendarDays className="w-5 h-5" />, label: "Community" },
+  { to: "/payments",     icon: <MdOutlinePayments />,         iconActive: <MdPayments />,            label: "Payments" },
+  { to: "/amenities",    icon: <Building2 className="w-5 h-5" />, iconActive: <Building2 className="w-5 h-5" />, label: "Amenities" },
+  { to: "/complaints",   icon: <MessageSquareWarning className="w-5 h-5" />, iconActive: <MessageSquareWarning className="w-5 h-5" />, label: "Complaints" },
+  { to: "/sos",          icon: <AlertTriangle className="w-5 h-5 text-red-500" />, iconActive: <AlertTriangle className="w-5 h-5 text-red-600" />, label: "SOS" },
+  { to: "/admin",        icon: <ClipboardList className="w-5 h-5" />, iconActive: <ClipboardList className="w-5 h-5 text-blue-600" />, label: "Admin" },
+  { to: "/notifications",icon: <Bell className="w-5 h-5" />, iconActive: <Bell className="w-5 h-5" />, label: "Notifications" },
+  { to: "/profile",      icon: <MdPersonOutline />,           iconActive: <MdPerson />,              label: "Profile" },
 ];
 
 export function SideNav() {

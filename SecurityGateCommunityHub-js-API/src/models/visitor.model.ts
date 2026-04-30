@@ -4,29 +4,37 @@ export enum VisitorCategory {
   RESIDENT = 'Resident',
   DELIVERY = 'Delivery',
   GUEST = 'Guest',
-  SERVICE = 'Service'
+  SERVICE = 'Service',
+  VENDOR = 'Vendor',
 }
 
 export enum VisitorStatus {
   PENDING = 'Pending',
+  OTP_SENT = 'OTP Sent',
   APPROVED = 'Approved',
   ACTIVE = 'Active',
   CHECKED_OUT = 'Checked Out',
-  COMPLETED = 'Completed'
+  COMPLETED = 'Completed',
+  DENIED = 'Denied',
 }
 
 export interface IVisitor extends Document {
   name: string;
-  photoUrl?: string;
+  phone?: string;
+  photoUrl?: string; // captured at gate
   category: VisitorCategory;
   purpose: string;
-  invitedBy: mongoose.Types.ObjectId; // User who invited
+  invitedBy: mongoose.Types.ObjectId;
   unit?: string;
   status: VisitorStatus;
   checkInTime?: Date;
   checkOutTime?: Date;
   entryPoint?: string;
-  qrCode?: string;
+  qrCode?: string; // gate pass QR
+  otp?: string; // 6-digit OTP for approval
+  otpExpiresAt?: Date;
+  otpVerified?: boolean;
+  vehicleNumber?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -34,6 +42,7 @@ export interface IVisitor extends Document {
 const VisitorSchema = new Schema<IVisitor>(
   {
     name: { type: String, required: true },
+    phone: { type: String },
     photoUrl: { type: String },
     category: { type: String, enum: Object.values(VisitorCategory), required: true },
     purpose: { type: String, required: true },
@@ -43,7 +52,11 @@ const VisitorSchema = new Schema<IVisitor>(
     checkInTime: { type: Date },
     checkOutTime: { type: Date },
     entryPoint: { type: String },
-    qrCode: { type: String }
+    qrCode: { type: String },
+    otp: { type: String },
+    otpExpiresAt: { type: Date },
+    otpVerified: { type: Boolean, default: false },
+    vehicleNumber: { type: String },
   },
   { timestamps: true }
 );

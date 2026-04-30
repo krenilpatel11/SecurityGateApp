@@ -258,3 +258,38 @@ Ready to begin Sprint 1 (MVP core auth + gate access).
 - Vite build succeeds ✅
 - API compiled to dist/ ✅
 - CHANGELOG updated ✅
+
+---
+
+## Sprint 5 — v0.5.0 — 2026-04-30
+**Goal**: Implement all industry-standard security gate & community management features per product requirements
+**Duration**: 1 day
+
+### User Stories
+- [x] As a resident, I can invite a visitor and share a QR gate pass + OTP for entry (SP: 5)
+- [x] As a resident, I can approve my visitor's entry by entering their OTP in the app (SP: 3)
+- [x] As a guard, I can verify a visitor's OTP at the gate before allowing entry (SP: 3)
+- [x] As a guard, I can capture a visitor's photo at check-in (SP: 2)
+- [x] As a resident, I can register domestic help and generate a vendor pass QR (SP: 3)
+- [x] As a guard, I can log staff check-in/out with health status and temperature (SP: 3)
+- [x] As a guard/admin, I can view a real-time gate dashboard with live activity feed and peak hours (SP: 5)
+- [x] As a resident, I can post buy/sell/rent/lost-found items on the community feed (SP: 3)
+- [x] As a guard, I can log incoming deliveries; resident approves/rejects remotely (SP: 3)
+- [x] Amenity booking rejects duplicate time-slot bookings with 409 conflict (SP: 2)
+
+### New Files
+**API:** staff.model.ts, attendanceLog.model.ts, gateLog.model.ts, communityFeed.model.ts,
+        staff.controller.ts, gate.controller.ts, communityFeed.controller.ts,
+        staff.routes.ts, gate.routes.ts, communityFeed.routes.ts
+
+**UI:** GateDashboardPage.tsx, StaffAttendancePage.tsx, CommunityFeedPage.tsx,
+        api/gate.ts, api/staff.ts, api/feed.ts
+
+### Definition of Done ✅
+- TypeScript 0 errors (API + UI) ✅
+- Vite build SUCCESS ✅
+- API compiled to dist/ ✅
+- All new routes mounted in app.ts ✅
+- All new pages routed in App.tsx ✅
+- SideNav updated with new links ✅
+- CHANGELOG updated ✅

@@ -145,3 +145,46 @@ Format: `## [vX.Y.Z] — YYYY-MM-DD`
 ### Build
 - `npx tsc --noEmit` → 0 errors (API + UI)
 - `npm run build` → SUCCESS (UI: 4.2MB, API: compiled to dist/)
+
+## [v0.5.0] — 2026-04-30 — Sprint 5: Industry-Standard Feature Completeness
+
+### Added — API
+- **`Staff` model** — name, phone, type (Maid/Driver/Gardener/Cook/etc.), assignedTo, unit, status, vendorPassUrl (QR)
+- **`AttendanceLog` model** — daily check-in/out, workedHours, healthStatus, temperature, notes
+- **`GateLog` model** — indexed audit trail for all gate events (visitor_checkin, delivery_approved, staff_checkin, sos_triggered, etc.)
+- **`CommunityFeed` model** — buy/sell/rent/lost-found/announcement posts with likes
+- **`staff.controller.ts`** — registerStaff (auto-generates vendor pass QR), getStaff, staffCheckIn (health log), staffCheckOut (auto-computes workedHours), getAttendanceLogs, updateStaffStatus
+- **`gate.controller.ts`** — getGateDashboard (real-time stats + peak hours + action breakdown), getGateLogs (paginated), createGateLog
+- **`communityFeed.controller.ts`** — getFeed, createPost, updatePostStatus, toggleLike, deletePost
+- **`staff.routes.ts`** — full CRUD + check-in/out/attendance
+- **`gate.routes.ts`** — dashboard, logs, manual log
+- **`communityFeed.routes.ts`** — full feed CRUD
+- **`delivery.routes.ts`** — rewritten: guard creates delivery, resident approves/rejects, leave-at-gate, club deliveries
+- **`visitor.routes.ts`** — OTP verify, photo capture, public gate pass, walk-in with vehicle number
+
+### Added — Visitor Upgrades
+- **OTP-based approval** — `inviteVisitor` generates 6-digit OTP + embeds in QR; `POST /visitor/:id/verify-otp` verifies
+- **Photo capture** — `PATCH /visitor/:id/photo` for guard to capture visitor photo at gate
+- **Public gate pass** — `GET /visitor/gate-pass/:id` (no auth) — shareable link for visitors
+- **New fields** — `phone`, `vehicleNumber`, `otp`, `otpExpiresAt`, `otpVerified` on Visitor model
+- **New statuses** — `OTP Sent`, `Denied` added to VisitorStatus enum
+- **New category** — `Vendor` added to VisitorCategory enum
+
+### Added — UI
+- **`GateDashboardPage`** — live stats (visitors today, active, pending, deliveries), activity feed with action badges, today's breakdown, peak hours bar chart (auto-refreshes every 30s)
+- **`StaffAttendancePage`** — register staff, view vendor pass QR, guard check-in/out with health status, attendance log panel per staff member
+- **`CommunityFeedPage`** — grid of buy/sell/rent/lost-found posts, category filter, search, create post modal, like toggle, mark sold/close, delete own posts
+- **`VisitorDashboard` upgraded** — OTP approval modal (resident), gate pass share modal, vehicle number field, photo display, OTP verify modal (guard), Denied status, auto-refresh every 20s
+- **`SideNav` updated** — Gate Dashboard + Community Feed + Staff links added
+- **`App.tsx` updated** — `/gate`, `/feed`, `/staff` routes wired
+
+### Changed
+- `delivery.controller.ts` — removed all `any`, full envelope, guard-side `createDelivery`, GateLog integration
+- `amenity.controller.ts` — time-slot conflict check (409 if slot already booked)
+- `app.ts` — mounted `/api/staff`, `/api/gate`, `/api/feed`
+- `api/visitor.ts` (UI) — `verifyVisitorOTP`, `captureVisitorPhoto`, `getGatePass`, `vehicleNumber` param
+- `types/visitor.ts` — all new fields, OTP Sent + Denied statuses, Vendor category
+
+### Build
+- `npx tsc --noEmit` → 0 errors (API + UI)
+- `npm run build` → SUCCESS (UI: 4.24MB, API: compiled to dist/)
