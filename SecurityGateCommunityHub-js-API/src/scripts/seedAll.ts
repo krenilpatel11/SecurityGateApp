@@ -533,27 +533,27 @@ async function seed() {
     {
       title: 'Water Supply Interruption — May 2nd',
       content: 'Water supply will be interrupted on May 2nd from 10am–2pm for pipeline maintenance. Please store water in advance. We apologize for the inconvenience.',
-      postedBy: admin._id, isPinned: true,
+      author: admin._id, isPinned: true,
     },
     {
       title: 'New Security Protocol — Effective May 1st',
       content: 'Starting May 1st, all visitors must register at the gate and receive a QR pass before entry. Delivery personnel must also be logged. Please inform your guests and domestic staff.',
-      postedBy: admin._id, isPinned: true,
+      author: admin._id, isPinned: true,
     },
     {
       title: 'Community BBQ — May 10th at 5pm',
       content: 'Join us for the annual community BBQ at the clubhouse lawn on May 10th at 5pm. Food, games, and fun for the whole family. RSVP via the Events section.',
-      postedBy: admin._id, isPinned: false,
+      author: admin._id, isPinned: false,
     },
     {
       title: 'Gym Renovation — Closed May 5–7',
       content: 'The fitness center will be closed from May 5th to May 7th for equipment upgrades. New treadmills and a yoga studio are being added. Thank you for your patience.',
-      postedBy: admin._id, isPinned: false,
+      author: admin._id, isPinned: false,
     },
     {
       title: 'Parking Allocation Update',
       content: 'Parking spots have been reallocated. Please check the notice board at the main gate for your new spot number. Any disputes should be raised with the admin office by May 5th.',
-      postedBy: admin._id, isPinned: false,
+      author: admin._id, isPinned: false,
     },
   ]);
   console.log('📢 Announcements seeded (5)');

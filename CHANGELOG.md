@@ -8,6 +8,37 @@ Format: `## [vX.Y.Z] — YYYY-MM-DD`
 
 ## [Unreleased]
 
+## [v0.6.0] — 2026-04-30 — Sprint 6: Real-time WebSocket, Lockdown, CSV Export & Build Fixes
+
+### Fixed
+- `server.ts` — unified env var to `MONGODB_URI` with `MONGO_URI` fallback; fixes Render.com deploy
+- `seedAll.ts` — Announcement seed used `postedBy` instead of required `author` field; fixed to `author`
+- `payment.model.ts` — added missing `OVERDUE = 'Overdue'` to `PaymentStatus` enum
+- `LiveNotificationBell.tsx` — type imports must use `import type` with `verbatimModuleSyntax`; fixed
+
+### Added — API
+- **`src/utils/socketService.ts`** — Socket.io singleton: `initSocketIO`, `emitGateEvent`, `emitNotification`, `broadcastNotification`, `activateLockdown`, `deactivateLockdown`, `getLockdownState`
+- **`server.ts`** — Socket.io wired into HTTP/HTTPS server on startup
+- **`gate.controller.ts`** — `exportGateLogs` (CSV via json2csv, up to 5000 rows), `triggerLockdown`, `liftLockdown`, `getLockdownStatus`; `createGateLog` now broadcasts `emitGateEvent`; `getGateDashboard` includes `lockdown` state
+- **`gate.routes.ts`** — `GET /api/gate/export`, `GET/POST/DELETE /api/gate/lockdown`
+- **`gateLog.model.ts`** — added `LOCKDOWN` and `LOCKDOWN_LIFTED` to `GateLogAction` enum
+- **`visitor.controller.ts`** — `updateVisitorStatus` now broadcasts `emitGateEvent` on check-in/out/deny
+
+### Added — UI
+- **`src/hooks/useSocket.ts`** — React hook wrapping Socket.io client; handles `gate:event`, `lockdown:activated/deactivated/status`, `notification:broadcast`
+- **`LiveNotificationBell.tsx`** — real-time notification bell in NavBar; shows unread badge, lockdown alerts (red), gate events (blue), info (green); dismiss per item or mark all read
+- **`NavBar.tsx`** — replaced static Bell icon with `<LiveNotificationBell />`
+- **`vite.config.ts`** — `manualChunks` code splitting: `vendor-react`, `vendor-radix`, `vendor-query`, `vendor-socket`, `vendor-icons`, `vendor-speech`; bundle reduced from 4.29MB → 3.87MB main chunk + 6 separate vendor chunks
+
+### Seed
+- All 16 collections seeded successfully against live MongoDB Atlas M0 cluster
+- 9 users, 8 visitors, 6 deliveries, 5 staff, 6 attendance logs, 12 gate logs, 8 community feed posts, 11 payments, 7 complaints, 5 announcements, 5 amenities, 8 bookings, 5 events, 4 polls, 4 SOS, 17 notifications
+
+### Build
+- `npx tsc --noEmit` → 0 errors (API + UI)
+- `npm run build` → SUCCESS (UI: 3.87MB main + vendor chunks, API: compiled to dist/)
+- Seed script → ✅ All 16 collections seeded
+
 - OpenCode multi-agent workflow configured with 4 specialized agents
 - Agile sprint pipeline: planner → ui-builder + api-builder (parallel) → qa-reviewer
 - Free hosting stack defined: MongoDB Atlas + Render.com + Vercel

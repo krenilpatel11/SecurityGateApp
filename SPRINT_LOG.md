@@ -292,4 +292,38 @@ Ready to begin Sprint 1 (MVP core auth + gate access).
 - All new routes mounted in app.ts ✅
 - All new pages routed in App.tsx ✅
 - SideNav updated with new links ✅
+
+---
+
+## Sprint 6 — v0.6.0 — 2026-04-30 ✅
+
+**Goal**: Real-time WebSocket gate notifications, emergency lockdown mode, CSV audit export, and build/seed fixes
+
+### User Stories
+- [x] As a security guard, I want real-time gate event notifications so I can monitor activity live (SP: 5)
+- [x] As an admin, I want to trigger emergency lockdown so all gate access is suspended instantly (SP: 5)
+- [x] As an admin, I want to export gate logs as CSV so I can audit activity offline (SP: 3)
+- [x] As any user, I want a live notification bell so I see gate events and alerts without refreshing (SP: 3)
+
+### Tasks Completed
+- [x] API: `socketService.ts` — Socket.io singleton with lockdown state management
+- [x] API: `server.ts` — Socket.io wired to HTTP/HTTPS server; `MONGODB_URI`/`MONGO_URI` fallback
+- [x] API: `gate.controller.ts` — `exportGateLogs` (CSV), `triggerLockdown`, `liftLockdown`, `getLockdownStatus`
+- [x] API: `gate.routes.ts` — export + lockdown endpoints
+- [x] API: `gateLog.model.ts` — `LOCKDOWN` + `LOCKDOWN_LIFTED` enum values
+- [x] API: `visitor.controller.ts` — emits `gate:event` on status change
+- [x] API: `payment.model.ts` — added `OVERDUE` status
+- [x] UI: `useSocket.ts` — Socket.io React hook
+- [x] UI: `LiveNotificationBell.tsx` — real-time bell with unread badge + lockdown alerts
+- [x] UI: `NavBar.tsx` — replaced static bell with live bell
+- [x] UI: `vite.config.ts` — `manualChunks` code splitting (6 vendor chunks)
+- [x] Seed: Fixed `author` field in Announcement seed; all 16 collections seeded ✅
+
+### Definition of Done
+- TypeScript compiles with 0 errors ✅
+- Vite build succeeds ✅
+- API builds to dist/ ✅
+- Seed script runs cleanly against live Atlas DB ✅
+- CHANGELOG updated ✅
+
 - CHANGELOG updated ✅

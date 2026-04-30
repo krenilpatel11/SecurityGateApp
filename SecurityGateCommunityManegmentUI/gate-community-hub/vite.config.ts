@@ -16,6 +16,32 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // React core
+          'vendor-react': ['react', 'react-dom', 'react-router'],
+          // UI primitives
+          'vendor-radix': [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-select',
+            '@radix-ui/react-tooltip',
+            '@radix-ui/react-menu',
+          ],
+          // Data fetching
+          'vendor-query': ['@tanstack/react-query'],
+          // Socket.io client
+          'vendor-socket': ['socket.io-client'],
+          // Icons
+          'vendor-icons': ['lucide-react', 'react-icons'],
+          // Heavy cognitive-services SDK (botframework dep) — isolate it
+          'vendor-speech': ['microsoft-cognitiveservices-speech-sdk'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 600,
+  },
   server: useHttps ? {
     https: {
       key: fs.readFileSync('./localhost-key.pem'),

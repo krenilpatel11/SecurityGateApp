@@ -2,8 +2,10 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // Validate required env vars before anything else
-const REQUIRED_ENV = ['MONGO_URI', 'JWT_SECRET'];
+const REQUIRED_ENV = ['JWT_SECRET'];
 const missing = REQUIRED_ENV.filter((key) => !process.env[key]);
+const mongoUri = process.env.MONGODB_URI ?? process.env.MONGO_URI;
+if (!mongoUri) missing.push('MONGODB_URI (or MONGO_URI)');
 if (missing.length > 0) {
   console.error(`❌ Missing required environment variables: ${missing.join(', ')}`);
   console.error('Set them in the Render dashboard under Environment → Environment Variables.');
@@ -22,7 +24,7 @@ const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
 mongoose
-  .connect(process.env.MONGO_URI as string)
+  .connect(mongoUri as string)
   .then(() => {
     console.log('✅ MongoDB connected');
 

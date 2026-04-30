@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { Bell, X, AlertTriangle, CheckCircle, Info, Zap } from 'lucide-react';
-import { useSocket, GateEvent, BroadcastNotification, LockdownState } from '../../../hooks/useSocket';
+import { useSocket } from '../../../hooks/useSocket';
+import type { GateEvent, BroadcastNotification, LockdownState } from '../../../hooks/useSocket';
 import { cn } from '../../../lib/utils';
 
 interface NotificationItem {
