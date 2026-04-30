@@ -1,7 +1,8 @@
-import { Bell, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 import { UserMenu } from "./UserMenu";
 import { ThemeToggle } from "./ThemeToggle";
 import { RoleSwitcher } from "./RoleSwitcher";
+import { LiveNotificationBell } from "./LiveNotificationBell";
 import logoSvg from "@/assets/logo/neighborlyHub-Logo.png";
 import { Sheet, SheetContent, SheetTrigger } from "../sheet";
 import { navLinks } from "./SideNav";
@@ -51,13 +52,7 @@ export function NavBar() {
         />
       </div>
       <div className="flex items-center gap-4">
-         {isAuthenticated && (
-          <button className="relative p-2 rounded-full hover:bg-muted group">
-            <Bell className="w-5 h-5 fill-none group-hover:fill-foreground/20 transition-all" />
-            {/* Notification dot */}
-            <span className="absolute top-1 right-1 w-2 h-2 bg-danger rounded-full"></span>
-          </button>
-        )}
+        {isAuthenticated && <LiveNotificationBell />}
         <RoleSwitcher />
         <ThemeToggle />
         {/* Show Login button if logged out, else UserMenu */}
@@ -66,8 +61,6 @@ export function NavBar() {
         ) : (
           <GoogleLoginButton />
         )}
-        
-       
       </div>
     </header>
   );

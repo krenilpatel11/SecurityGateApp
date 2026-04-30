@@ -12,6 +12,8 @@ export enum GateLogAction {
   SOS_TRIGGERED = 'sos_triggered',
   GATE_OPENED = 'gate_opened',
   GATE_CLOSED = 'gate_closed',
+  LOCKDOWN = 'lockdown',
+  LOCKDOWN_LIFTED = 'lockdown_lifted',
 }
 
 export interface IGateLog extends Document {

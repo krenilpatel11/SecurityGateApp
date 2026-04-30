@@ -3,6 +3,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 export enum PaymentStatus {
   PENDING = 'Pending',
   PAID = 'Paid',
+  OVERDUE = 'Overdue',
 }
 
 export interface IPayment extends Document {

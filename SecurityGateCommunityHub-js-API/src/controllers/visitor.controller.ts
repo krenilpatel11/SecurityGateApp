@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import Visitor, { VisitorCategory, VisitorStatus } from '../models/visitor.model';
 import GateLog, { GateLogAction } from '../models/gateLog.model';
 import QRCode from 'qrcode';
+import { emitGateEvent } from '../utils/socketService';
 
 // Helper: generate 6-digit OTP
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
@@ -192,6 +193,8 @@ export const updateVisitorStatus = async (req: Request, res: Response) => {
         description: `${visitor.name} — ${status}`,
         metadata: { visitorId: visitor._id, category: visitor.category },
       });
+      // Broadcast real-time gate event
+      emitGateEvent({ action, visitorName: visitor.name, unit: visitor.unit, message: `${visitor.name} — ${status}` });
     }
 
     return res.json({ success: true, data: visitor, message: 'Visitor status updated' });
