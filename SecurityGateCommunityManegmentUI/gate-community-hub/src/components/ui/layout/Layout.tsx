@@ -12,13 +12,25 @@ export function Layout({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      {/* Fixed top navbar */}
       <NavBar />
-      <div className="flex flex-1 container mx-auto px-0 py-2 sm:py-4">
-        <aside className="flex-shrink-0">
+
+      {/* Body: sidebar + main content — fills remaining height */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar — hidden on mobile, shown md+ */}
+        <aside className="flex-shrink-0 hidden md:flex">
           <SideNav />
         </aside>
-        <main className="flex-1 p-3 sm:p-6">{children}</main>
+
+        {/* Main scrollable content area */}
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+          <div className="max-w-7xl mx-auto w-full">
+            {children}
+          </div>
+        </main>
       </div>
+
+      {/* Bot chat widget */}
       {directLine && (
         <div className="fixed bottom-6 right-6 z-[1000] w-[370px] max-w-[90vw] shadow-lg rounded-xl overflow-hidden bg-white">
           <ReactWebChat
